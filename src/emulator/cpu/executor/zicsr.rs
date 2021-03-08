@@ -4,6 +4,7 @@ use crate::{
         cpu::{
             csr::ControlAndStatusRegister,
             executor::{Executor, MASK_12BIT},
+            f::FloatingPointRegister,
             pc::ProgramCounter,
             x::IntegerRegister,
         },
@@ -37,6 +38,7 @@ impl Executor for ZicsrExecutor {
         >,
         _: &mut ProgramCounter,
         x: &mut IntegerRegister,
+        _: &mut FloatingPointRegister,
         csr: &mut ControlAndStatusRegister,
         _: &mut SystemBus,
     ) {

@@ -1,6 +1,7 @@
 mod csr;
 mod decoder;
 mod executor;
+mod f;
 mod pc;
 mod x;
 
@@ -18,6 +19,7 @@ use crate::emulator::{
             rv64i::Rv64iExecutor, rv64m::Rv64mExecutor, zicsr::ZicsrExecutor,
             zifencei::ZifenceiExecutor, Executor,
         },
+        f::FloatingPointRegister,
         pc::ProgramCounter,
         x::{IntegerRegister, GP},
     },
@@ -26,6 +28,7 @@ use crate::emulator::{
 #[derive(Default)]
 pub struct Cpu {
     x: IntegerRegister,
+    f: FloatingPointRegister,
     pc: ProgramCounter,
     csr: ControlAndStatusRegister,
     pub bus: SystemBus,
@@ -44,6 +47,7 @@ impl Cpu {
                     decoded,
                     &mut self.pc,
                     &mut self.x,
+                    &mut self.f,
                     &mut self.csr,
                     &mut self.bus,
                 )
@@ -52,6 +56,7 @@ impl Cpu {
                     decoded,
                     &mut self.pc,
                     &mut self.x,
+                    &mut self.f,
                     &mut self.csr,
                     &mut self.bus,
                 )
@@ -60,6 +65,7 @@ impl Cpu {
                     decoded,
                     &mut self.pc,
                     &mut self.x,
+                    &mut self.f,
                     &mut self.csr,
                     &mut self.bus,
                 )
@@ -68,6 +74,7 @@ impl Cpu {
                     decoded,
                     &mut self.pc,
                     &mut self.x,
+                    &mut self.f,
                     &mut self.csr,
                     &mut self.bus,
                 )
@@ -76,6 +83,7 @@ impl Cpu {
                     decoded,
                     &mut self.pc,
                     &mut self.x,
+                    &mut self.f,
                     &mut self.csr,
                     &mut self.bus,
                 )
@@ -84,6 +92,7 @@ impl Cpu {
                     decoded,
                     &mut self.pc,
                     &mut self.x,
+                    &mut self.f,
                     &mut self.csr,
                     &mut self.bus,
                 )
@@ -92,6 +101,7 @@ impl Cpu {
                     decoded,
                     &mut self.pc,
                     &mut self.x,
+                    &mut self.f,
                     &mut self.csr,
                     &mut self.bus,
                 )

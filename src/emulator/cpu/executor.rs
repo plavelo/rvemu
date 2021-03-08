@@ -1,4 +1,5 @@
 pub mod privileged;
+pub mod rv32f;
 pub mod rv32i;
 pub mod rv32m;
 pub mod rv64i;
@@ -9,11 +10,15 @@ pub mod zifencei;
 use crate::{
     emulator::{
         bus::SystemBus,
-        cpu::{csr::ControlAndStatusRegister, pc::ProgramCounter, x::IntegerRegister},
+        cpu::{
+            csr::ControlAndStatusRegister, f::FloatingPointRegister, pc::ProgramCounter,
+            x::IntegerRegister,
+        },
     },
     isa::instruction::Instruction,
 };
 
+const MASK_3BIT: u64 = 0b111;
 const MASK_5BIT: u64 = 0b11111;
 const MASK_12BIT: u64 = 0b111111111111;
 
@@ -37,6 +42,7 @@ pub trait Executor {
         >,
         pc: &mut ProgramCounter,
         x: &mut IntegerRegister,
+        f: &mut FloatingPointRegister,
         csr: &mut ControlAndStatusRegister,
         bus: &mut SystemBus,
     );

@@ -2,8 +2,8 @@ use crate::{
     emulator::{
         bus::SystemBus,
         cpu::{
-            csr::ControlAndStatusRegister, executor::Executor, pc::ProgramCounter,
-            x::IntegerRegister,
+            csr::ControlAndStatusRegister, executor::Executor, f::FloatingPointRegister,
+            pc::ProgramCounter, x::IntegerRegister,
         },
     },
     isa::instruction::{
@@ -36,6 +36,7 @@ impl Executor for ZifenceiExecutor {
         >,
         _: &mut ProgramCounter,
         _: &mut IntegerRegister,
+        _: &mut FloatingPointRegister,
         _: &mut ControlAndStatusRegister,
         _: &mut SystemBus,
     ) {

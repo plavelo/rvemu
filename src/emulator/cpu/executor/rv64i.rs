@@ -4,6 +4,7 @@ use crate::{
         cpu::{
             csr::ControlAndStatusRegister,
             executor::{Executor, MASK_5BIT},
+            f::FloatingPointRegister,
             pc::ProgramCounter,
             x::IntegerRegister,
         },
@@ -37,6 +38,7 @@ impl Executor for Rv64iExecutor {
         >,
         _: &mut ProgramCounter,
         x: &mut IntegerRegister,
+        _: &mut FloatingPointRegister,
         _: &mut ControlAndStatusRegister,
         bus: &mut SystemBus,
     ) {

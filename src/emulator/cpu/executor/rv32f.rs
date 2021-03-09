@@ -45,8 +45,8 @@ impl Executor for Rv32fExecutor {
         csr: &mut ControlAndStatusRegister,
         _: &mut SystemBus,
     ) {
-        let fcsr = csr.get(FCSR);
-        let frm = (fcsr >> 5) & MASK_3BIT;
+        // let fcsr = csr.get(FCSR);
+        // let frm = (fcsr >> 5) & MASK_3BIT;
         match instruction {
             Instruction::TypeR {
                 opcode,

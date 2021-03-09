@@ -1,19 +1,19 @@
 pub struct FloatingPointRegister {
-    f: [f32; 32],
+    f: [u32; 32],
 }
 
 impl Default for FloatingPointRegister {
     fn default() -> Self {
-        Self { f: [0f32; 32] }
+        Self { f: [0; 32] }
     }
 }
 
 impl FloatingPointRegister {
-    pub fn read(&self, register: usize) -> f32 {
+    pub fn read(&self, register: usize) -> u32 {
         self.f[register]
     }
 
-    pub fn write(&mut self, register: usize, value: f32) {
+    pub fn write(&mut self, register: usize, value: u32) {
         self.f[register] = value;
     }
 }

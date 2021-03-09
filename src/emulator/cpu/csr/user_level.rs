@@ -10,10 +10,6 @@ impl Csr for UserLevelCsr {
         self.csr.contains_key(&address)
     }
 
-    fn get(&self, address: u64) -> u64 {
-        self.csr[&address]
-    }
-
     fn csrrw(&mut self, address: u64, value: u64) -> u64 {
         let t = self.csr[&address];
         *self.csr.get_mut(&address).unwrap() = value;

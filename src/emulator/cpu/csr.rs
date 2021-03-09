@@ -14,19 +14,6 @@ pub struct ControlAndStatusRegister {
 }
 
 impl ControlAndStatusRegister {
-    pub fn get(&self, address: u64) -> u64 {
-        if self.ucsr.contains(address) {
-            return self.ucsr.get(address);
-        }
-        if self.scsr.contains(address) {
-            return self.scsr.get(address);
-        }
-        if self.mcsr.contains(address) {
-            return self.mcsr.get(address);
-        }
-        panic!("todo: address not found.");
-    }
-
     pub fn csrrw(&mut self, address: u64, value: u64) -> u64 {
         if self.ucsr.contains(address) {
             return self.ucsr.csrrw(address, value);
@@ -69,7 +56,6 @@ impl ControlAndStatusRegister {
 
 pub trait Csr {
     fn contains(&self, address: u64) -> bool;
-    fn get(&self, address: u64) -> u64;
     fn csrrw(&mut self, address: u64, value: u64) -> u64;
     fn csrrs(&mut self, address: u64, value: u64) -> u64;
     fn csrrc(&mut self, address: u64, value: u64) -> u64;

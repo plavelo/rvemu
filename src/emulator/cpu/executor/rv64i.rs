@@ -45,9 +45,11 @@ impl Executor for Rv64iExecutor {
         match instruction {
             Instruction::TypeR {
                 opcode,
+                rd,
+                funct3: _,
                 rs1,
                 rs2,
-                rd,
+                funct7: _,
             } => match opcode {
                 Rv64iOpcodeR::Sllw => x.writei(
                     rd,
@@ -70,8 +72,9 @@ impl Executor for Rv64iExecutor {
             },
             Instruction::TypeI {
                 opcode,
-                rs1,
                 rd,
+                funct3: _,
+                rs1,
                 imm,
             } => match opcode {
                 Rv64iOpcodeI::Slliw => x.writei(
@@ -96,6 +99,7 @@ impl Executor for Rv64iExecutor {
             },
             Instruction::TypeS {
                 opcode,
+                funct3: _,
                 rs1,
                 rs2,
                 imm,
@@ -104,22 +108,7 @@ impl Executor for Rv64iExecutor {
                     bus.store64(x.readi(rs1).wrapping_add(imm as i64) as u64, x.readu(rs2))
                 }
             },
-            Instruction::TypeB {
-                opcode: _,
-                rs1: _,
-                rs2: _,
-                imm: _,
-            } => {}
-            Instruction::TypeU {
-                opcode: _,
-                rd: _,
-                imm: _,
-            } => {}
-            Instruction::TypeJ {
-                opcode: _,
-                rd: _,
-                imm: _,
-            } => {}
+            _ => {}
         }
     }
 }

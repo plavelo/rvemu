@@ -45,9 +45,11 @@ impl Executor for Rv32iExecutor {
         match instruction {
             Instruction::TypeR {
                 opcode,
+                rd,
+                funct3: _,
                 rs1,
                 rs2,
-                rd,
+                funct7: _,
             } => match opcode {
                 Rv32iOpcodeR::Sll => x.writeu(rd, x.readu(rs1) << (x.readu(rs2) & MASK_5BIT)),
                 Rv32iOpcodeR::Srl => x.writeu(rd, x.readu(rs1) >> (x.readu(rs2) & MASK_5BIT)),
@@ -62,8 +64,9 @@ impl Executor for Rv32iExecutor {
             },
             Instruction::TypeI {
                 opcode,
-                rs1,
                 rd,
+                funct3: _,
+                rs1,
                 imm,
             } => match opcode {
                 Rv32iOpcodeI::Slli => x.writeu(rd, x.readu(rs1) << (imm & MASK_5BIT)),
@@ -106,6 +109,7 @@ impl Executor for Rv32iExecutor {
             },
             Instruction::TypeS {
                 opcode,
+                funct3: _,
                 rs1,
                 rs2,
                 imm,
@@ -125,6 +129,7 @@ impl Executor for Rv32iExecutor {
             },
             Instruction::TypeB {
                 opcode,
+                funct3: _,
                 rs1,
                 rs2,
                 imm,

@@ -1,5 +1,14 @@
 use std::fmt;
 
+pub enum RoundingMode {
+    RNE, // Round to Nearest, ties to Even
+    RTZ, // Round towards Zero
+    RDN, // Round Down (towards −∞)
+    RUP, // Round Up (towards +∞)
+    RMM, // Round to Nearest, ties to Max Magnitude
+    DYN, // In instruction’s rm field, selects dynamic rounding mode; In Rounding Mode register, Invalid.
+}
+
 #[derive(Debug, PartialEq)]
 pub enum Rv32fOpcodeR {
     FmaddS,

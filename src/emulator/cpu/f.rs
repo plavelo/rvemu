@@ -1,3 +1,4 @@
+#[allow(dead_code)]
 pub struct FloatingPointRegister {
     f: [u32; 32],
 }
@@ -8,6 +9,7 @@ impl Default for FloatingPointRegister {
     }
 }
 
+#[allow(dead_code)]
 impl FloatingPointRegister {
     pub fn read(&self, register: usize) -> u32 {
         self.f[register]

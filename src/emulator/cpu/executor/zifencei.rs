@@ -40,43 +40,17 @@ impl Executor for ZifenceiExecutor {
         _: &mut ControlAndStatusRegister,
         _: &mut SystemBus,
     ) {
-        match instruction {
-            Instruction::TypeR {
-                opcode: _,
-                rs1: _,
-                rs2: _,
-                rd: _,
-            } => {}
-            Instruction::TypeI {
-                opcode,
-                rs1: _,
-                rd: _,
-                imm: _,
-            } => match opcode {
+        if let Instruction::TypeI {
+            opcode,
+            rd: _,
+            funct3: _,
+            rs1: _,
+            imm: _,
+        } = instruction
+        {
+            match opcode {
                 ZifenceiOpcodeI::FenceI => {} // not yet supported
-            },
-            Instruction::TypeS {
-                opcode: _,
-                rs1: _,
-                rs2: _,
-                imm: _,
-            } => {}
-            Instruction::TypeB {
-                opcode: _,
-                rs1: _,
-                rs2: _,
-                imm: _,
-            } => {}
-            Instruction::TypeU {
-                opcode: _,
-                rd: _,
-                imm: _,
-            } => {}
-            Instruction::TypeJ {
-                opcode: _,
-                rd: _,
-                imm: _,
-            } => {}
+            }
         }
     }
 }

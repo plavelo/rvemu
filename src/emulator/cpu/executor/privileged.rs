@@ -42,9 +42,11 @@ impl Executor for PrivilegedExecutor {
     ) {
         if let Instruction::TypeR {
             opcode,
+            rd: _,
+            funct3: _,
             rs1: _,
             rs2: _,
-            rd: _,
+            funct7: _,
         } = instruction
         {
             match opcode {

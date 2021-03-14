@@ -13,7 +13,8 @@ use crate::{
         csr::user_level::FCSR,
         instruction::{
             rv32f::{
-                Rv32fOpcodeB, Rv32fOpcodeI, Rv32fOpcodeJ, Rv32fOpcodeR, Rv32fOpcodeS, Rv32fOpcodeU,
+                RoundingMode, Rv32fOpcodeB, Rv32fOpcodeI, Rv32fOpcodeJ, Rv32fOpcodeR, Rv32fOpcodeS,
+                Rv32fOpcodeU,
             },
             Instruction,
         },
@@ -45,14 +46,16 @@ impl Executor for Rv32fExecutor {
         csr: &mut ControlAndStatusRegister,
         _: &mut SystemBus,
     ) {
-        // let fcsr = csr.get(FCSR);
-        // let frm = (fcsr >> 5) & MASK_3BIT;
+        let raw_frm = (csr.csrrs(FCSR, 0) >> 5) & MASK_3BIT;
+        let _frm = decode_frm(raw_frm);
         match instruction {
             Instruction::TypeR {
                 opcode,
+                rd: _,
+                funct3: _,
                 rs1: _,
                 rs2: _,
-                rd: _,
+                funct7: _,
             } => match opcode {
                 Rv32fOpcodeR::FmaddS => {}
                 Rv32fOpcodeR::FmsubS => {}
@@ -81,36 +84,35 @@ impl Executor for Rv32fExecutor {
             },
             Instruction::TypeI {
                 opcode,
-                rs1: _,
                 rd: _,
+                funct3: _,
+                rs1: _,
                 imm: _,
             } => match opcode {
                 Rv32fOpcodeI::Flw => {}
             },
             Instruction::TypeS {
                 opcode,
+                funct3: _,
                 rs1: _,
                 rs2: _,
                 imm: _,
             } => match opcode {
                 Rv32fOpcodeS::Fsw => {}
             },
-            Instruction::TypeB {
-                opcode: _,
-                rs1: _,
-                rs2: _,
-                imm: _,
-            } => {}
-            Instruction::TypeU {
-                opcode: _,
-                rd: _,
-                imm: _,
-            } => {}
-            Instruction::TypeJ {
-                opcode: _,
-                rd: _,
-                imm: _,
-            } => {}
+            _ => {}
         }
+    }
+}
+
+fn decode_frm(frm: u64) -> Option<RoundingMode> {
+    match frm {
+        0b000 => Some(RoundingMode::RNE),
+        0b001 => Some(RoundingMode::RTZ),
+        0b010 => Some(RoundingMode::RDN),
+        0b011 => Some(RoundingMode::RUP),
+        0b100 => Some(RoundingMode::RMM),
+        0b111 => Some(RoundingMode::DYN),
+        _ => None,
     }
 }

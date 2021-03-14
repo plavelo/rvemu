@@ -39,13 +39,16 @@ impl Executor for Rv32mExecutor {
         _: &mut ControlAndStatusRegister,
         _: &mut SystemBus,
     ) {
-        match instruction {
-            Instruction::TypeR {
-                opcode,
-                rs1,
-                rs2,
-                rd,
-            } => match opcode {
+        if let Instruction::TypeR {
+            opcode,
+            rd,
+            funct3: _,
+            rs1,
+            rs2,
+            funct7: _,
+        } = instruction
+        {
+            match opcode {
                 Rv32mOpcodeR::Mul => x.writeu(rd, x.readu(rs1).wrapping_mul(x.readu(rs2))),
                 Rv32mOpcodeR::Mulh => x.writeu(
                     rd,
@@ -108,35 +111,7 @@ impl Executor for Rv32mExecutor {
                         },
                     )
                 }
-            },
-            Instruction::TypeI {
-                opcode: _,
-                rs1: _,
-                rd: _,
-                imm: _,
-            } => {}
-            Instruction::TypeS {
-                opcode: _,
-                rs1: _,
-                rs2: _,
-                imm: _,
-            } => {}
-            Instruction::TypeB {
-                opcode: _,
-                rs1: _,
-                rs2: _,
-                imm: _,
-            } => {}
-            Instruction::TypeU {
-                opcode: _,
-                rd: _,
-                imm: _,
-            } => {}
-            Instruction::TypeJ {
-                opcode: _,
-                rd: _,
-                imm: _,
-            } => {}
+            }
         }
     }
 }

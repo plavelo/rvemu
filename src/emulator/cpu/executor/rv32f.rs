@@ -63,10 +63,10 @@ impl Executor for Rv32fExecutor {
             Rv32fOpcodeJ,
         >,
         _: &mut ProgramCounter,
-        _: &mut IntegerRegister,
+        x: &mut IntegerRegister,
         f: &mut FloatingPointRegister,
         csr: &mut ControlAndStatusRegister,
-        _: &mut SystemBus,
+        bus: &mut SystemBus,
     ) {
         match instruction {
             Instruction::TypeR {
@@ -77,7 +77,8 @@ impl Executor for Rv32fExecutor {
                 rs2,
                 funct7,
             } => {
-                // TODO: handle invalid
+                // TODO: NaN handling
+                // TODO: invalid rm handling
                 let rm = select_rm(funct3, csr).unwrap();
                 let rs3 = (funct7 >> 2) & MASK_5BIT as usize;
                 match opcode {
@@ -91,48 +92,174 @@ impl Executor for Rv32fExecutor {
                             )
                             .to_bits(),
                     ),
-                    Rv32fOpcodeR::FmsubS => {}
-                    Rv32fOpcodeR::FnmsubS => {}
-                    Rv32fOpcodeR::FnmaddS => {}
-                    Rv32fOpcodeR::FaddS => {}
-                    Rv32fOpcodeR::FsubS => {}
-                    Rv32fOpcodeR::FmulS => {}
-                    Rv32fOpcodeR::FdivS => {}
-                    Rv32fOpcodeR::FsqrtS => {}
-                    Rv32fOpcodeR::FsgnjS => {}
-                    Rv32fOpcodeR::FsgnjnS => {}
-                    Rv32fOpcodeR::FsgnjxS => {}
-                    Rv32fOpcodeR::FminS => {}
-                    Rv32fOpcodeR::FmaxS => {}
-                    Rv32fOpcodeR::FcvtWS => {}
-                    Rv32fOpcodeR::FcvtWuS => {}
-                    Rv32fOpcodeR::FmvXW => {}
-                    Rv32fOpcodeR::FeqS => {}
-                    Rv32fOpcodeR::FltS => {}
-                    Rv32fOpcodeR::FleS => {}
-                    Rv32fOpcodeR::FclassS => {}
-                    Rv32fOpcodeR::FcvtSW => {}
-                    Rv32fOpcodeR::FcvtSWu => {}
-                    Rv32fOpcodeR::FmvWX => {}
+                    Rv32fOpcodeR::FmsubS => f.write(
+                        rd,
+                        F32::from_bits(f.read(rs1))
+                            .fused_mul_add(
+                                F32::from_bits(f.read(rs2)),
+                                F32::neg(&F32::from_bits(f.read(rs3))),
+                                rm,
+                            )
+                            .to_bits(),
+                    ),
+                    Rv32fOpcodeR::FnmsubS => f.write(
+                        rd,
+                        F32::from_bits(f.read(rs1))
+                            .fused_mul_add(
+                                F32::neg(&F32::from_bits(f.read(rs2))),
+                                F32::neg(&F32::from_bits(f.read(rs3))),
+                                rm,
+                            )
+                            .to_bits(),
+                    ),
+                    Rv32fOpcodeR::FnmaddS => f.write(
+                        rd,
+                        F32::from_bits(f.read(rs1))
+                            .fused_mul_add(
+                                F32::neg(&F32::from_bits(f.read(rs2))),
+                                F32::from_bits(f.read(rs3)),
+                                rm,
+                            )
+                            .to_bits(),
+                    ),
+                    Rv32fOpcodeR::FaddS => f.write(
+                        rd,
+                        F32::from_bits(f.read(rs1))
+                            .add(F32::from_bits(f.read(rs2)), rm)
+                            .to_bits(),
+                    ),
+                    Rv32fOpcodeR::FsubS => f.write(
+                        rd,
+                        F32::from_bits(f.read(rs1))
+                            .sub(F32::from_bits(f.read(rs2)), rm)
+                            .to_bits(),
+                    ),
+                    Rv32fOpcodeR::FmulS => f.write(
+                        rd,
+                        F32::from_bits(f.read(rs1))
+                            .mul(F32::from_bits(f.read(rs2)), rm)
+                            .to_bits(),
+                    ),
+                    Rv32fOpcodeR::FdivS => f.write(
+                        rd,
+                        F32::from_bits(f.read(rs1))
+                            .div(F32::from_bits(f.read(rs2)), rm)
+                            .to_bits(),
+                    ),
+                    Rv32fOpcodeR::FsqrtS => {
+                        f.write(rd, F32::from_bits(f.read(rs1)).sqrt(rm).to_bits())
+                    }
+                    Rv32fOpcodeR::FsgnjS => {
+                        let sign = F32::from_bits(f.read(rs2)).sign();
+                        let mut ret = F32::from_bits(f.read(rs1));
+                        ret.set_sign(sign);
+                        f.write(rd, ret.to_bits())
+                    }
+                    Rv32fOpcodeR::FsgnjnS => {
+                        let sign = F32::from_bits(f.read(rs2)).sign();
+                        let mut ret = F32::from_bits(f.read(rs1));
+                        ret.set_sign(!sign);
+                        f.write(rd, ret.to_bits())
+                    }
+                    Rv32fOpcodeR::FsgnjxS => {
+                        let mut ret = F32::from_bits(f.read(rs1));
+                        let sign = F32::from_bits(f.read(rs2)).sign() ^ ret.sign();
+                        ret.set_sign(sign);
+                        f.write(rd, ret.to_bits())
+                    }
+                    Rv32fOpcodeR::FminS => {
+                        let val1 = F32::from_bits(f.read(rs1));
+                        let val2 = F32::from_bits(f.read(rs2));
+                        let min = if val1.lt(val2) { val1 } else { val2 };
+                        f.write(rd, min.to_bits())
+                    }
+                    Rv32fOpcodeR::FmaxS => {
+                        let val1 = F32::from_bits(f.read(rs1));
+                        let val2 = F32::from_bits(f.read(rs2));
+                        let max = if val1.lt(val2) { val2 } else { val1 };
+                        f.write(rd, max.to_bits())
+                    }
+                    Rv32fOpcodeR::FcvtWS => {
+                        x.writei(rd, F32::from_bits(f.read(rs1)).to_i32(rm, false) as i64)
+                    }
+                    Rv32fOpcodeR::FcvtWuS => x.writei(
+                        rd,
+                        F32::from_bits(f.read(rs1)).to_u32(rm, false) as i32 as i64,
+                    ),
+                    Rv32fOpcodeR::FmvXW => x.writei(rd, f.read(rs1) as i32 as i64),
+                    Rv32fOpcodeR::FeqS => {
+                        let val1 = F32::from_bits(f.read(rs1));
+                        let val2 = F32::from_bits(f.read(rs2));
+                        let ret = if val1.eq(val2) { 1 } else { 0 };
+                        f.write(rd, ret)
+                    }
+                    Rv32fOpcodeR::FltS => {
+                        let val1 = F32::from_bits(f.read(rs1));
+                        let val2 = F32::from_bits(f.read(rs2));
+                        let ret = if val1.lt(val2) { 1 } else { 0 };
+                        f.write(rd, ret)
+                    }
+                    Rv32fOpcodeR::FleS => {
+                        let val1 = F32::from_bits(f.read(rs1));
+                        let val2 = F32::from_bits(f.read(rs2));
+                        let ret = if val1.le(val2) { 1 } else { 0 };
+                        f.write(rd, ret)
+                    }
+                    Rv32fOpcodeR::FclassS => {
+                        let val = F32::from_bits(f.read(rs1));
+                        let class = if val.is_negative_infinity() {
+                            0
+                        } else if val.is_negative_normal() {
+                            1
+                        } else if val.is_negative_subnormal() {
+                            2
+                        } else if val.is_negative_zero() {
+                            3
+                        } else if val.is_positive_zero() {
+                            4
+                        } else if val.is_positive_subnormal() {
+                            5
+                        } else if val.is_positive_normal() {
+                            6
+                        } else if val.is_positive_infinity() {
+                            7
+                        } else {
+                            // TODO: supports signaling NaN / quiet NaN
+                            9
+                        };
+                        x.writeu(rd, class)
+                    }
+                    Rv32fOpcodeR::FcvtSW => {
+                        f.write(rd, F32::from_i32(x.readi(rs1) as i32, rm).to_bits())
+                    }
+                    Rv32fOpcodeR::FcvtSWu => {
+                        f.write(rd, F32::from_u32(x.readi(rs1) as u32, rm).to_bits())
+                    }
+                    Rv32fOpcodeR::FmvWX => f.write(rd, x.readu(rs1) as u32),
                 }
             }
             Instruction::TypeI {
                 opcode,
-                rd: _,
+                rd,
                 funct3: _,
-                rs1: _,
-                imm: _,
+                rs1,
+                imm,
             } => match opcode {
-                Rv32fOpcodeI::Flw => {}
+                Rv32fOpcodeI::Flw => f.write(
+                    rd,
+                    bus.load32(x.readi(rs1).wrapping_add(imm as i64) as u64) as u32,
+                ),
             },
             Instruction::TypeS {
                 opcode,
                 funct3: _,
-                rs1: _,
-                rs2: _,
-                imm: _,
+                rs1,
+                rs2,
+                imm,
             } => match opcode {
-                Rv32fOpcodeS::Fsw => {}
+                Rv32fOpcodeS::Fsw => {
+                    bus.store32(x.readi(rs1).wrapping_add(imm as i64) as u64, f.read(rs2))
+                }
             },
             _ => {}
         }

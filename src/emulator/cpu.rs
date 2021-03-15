@@ -10,13 +10,13 @@ use crate::emulator::{
     cpu::{
         csr::ControlAndStatusRegister,
         decoder::{
-            privileged::PrivilegedDecoder, rv32i::Rv32iDecoder, rv32m::Rv32mDecoder,
-            rv64i::Rv64iDecoder, rv64m::Rv64mDecoder, zicsr::ZicsrDecoder,
+            privileged::PrivilegedDecoder, rv32f::Rv32fDecoder, rv32i::Rv32iDecoder,
+            rv32m::Rv32mDecoder, rv64i::Rv64iDecoder, rv64m::Rv64mDecoder, zicsr::ZicsrDecoder,
             zifencei::ZifenceiDecoder, Decoder,
         },
         executor::{
-            privileged::PrivilegedExecutor, rv32i::Rv32iExecutor, rv32m::Rv32mExecutor,
-            rv64i::Rv64iExecutor, rv64m::Rv64mExecutor, zicsr::ZicsrExecutor,
+            privileged::PrivilegedExecutor, rv32f::Rv32fExecutor, rv32i::Rv32iExecutor,
+            rv32m::Rv32mExecutor, rv64i::Rv64iExecutor, rv64m::Rv64mExecutor, zicsr::ZicsrExecutor,
             zifencei::ZifenceiExecutor, Executor,
         },
         f::FloatingPointRegister,
@@ -98,6 +98,15 @@ impl Cpu {
                 )
             } else if let Some(decoded) = Rv64mDecoder::decode(instruction) {
                 Rv64mExecutor::execute(
+                    decoded,
+                    &mut self.pc,
+                    &mut self.x,
+                    &mut self.f,
+                    &mut self.csr,
+                    &mut self.bus,
+                )
+            } else if let Some(decoded) = Rv32fDecoder::decode(instruction) {
+                Rv32fExecutor::execute(
                     decoded,
                     &mut self.pc,
                     &mut self.x,

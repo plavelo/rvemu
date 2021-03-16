@@ -12,7 +12,7 @@ fn run(name: &str) -> bool {
     let mut emulator = Emulator::default();
     if let Ok(f) = file {
         let _ = emulator.load(f);
-        emulator.run() == 1
+        emulator.run() == 0
     } else {
         false
     }

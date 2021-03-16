@@ -21,7 +21,7 @@ use crate::emulator::{
         },
         f::FloatingPointRegister,
         pc::ProgramCounter,
-        x::{IntegerRegister, GP},
+        x::{IntegerRegister, A0},
     },
 };
 
@@ -123,6 +123,6 @@ impl Cpu {
                 self.pc.increment();
             }
         }
-        self.x.readu(GP)
+        self.x.readu(A0)
     }
 }

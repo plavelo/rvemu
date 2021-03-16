@@ -14,7 +14,7 @@ fn main() -> Result<()> {
     let mut emulator = Emulator::default();
     emulator.load(file)?;
     let result = emulator.run();
-    if result == 1 {
+    if result == 0 {
         println!("PASS: {}", input);
     } else {
         println!("FAIL({}): {}", result, input);

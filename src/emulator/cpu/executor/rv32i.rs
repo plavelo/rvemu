@@ -39,7 +39,7 @@ impl Executor for Rv32iExecutor {
         pc: &mut ProgramCounter,
         x: &mut IntegerRegister,
         _: &mut FloatingPointRegister,
-        _: &mut ControlAndStatusRegister,
+        csr: &mut ControlAndStatusRegister,
         bus: &mut SystemBus,
     ) {
         match instruction {

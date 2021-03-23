@@ -5,24 +5,27 @@ mod f;
 mod pc;
 mod x;
 
-use crate::emulator::{
-    bus::SystemBus,
-    cpu::{
-        csr::ControlAndStatusRegister,
-        decoder::{
-            privileged::PrivilegedDecoder, rv32f::Rv32fDecoder, rv32i::Rv32iDecoder,
-            rv32m::Rv32mDecoder, rv64i::Rv64iDecoder, rv64m::Rv64mDecoder, zicsr::ZicsrDecoder,
-            zifencei::ZifenceiDecoder, Decoder,
+use crate::{
+    emulator::{
+        bus::SystemBus,
+        cpu::{
+            csr::ControlAndStatusRegister,
+            decoder::{
+                privileged::PrivilegedDecoder, rv32f::Rv32fDecoder, rv32i::Rv32iDecoder,
+                rv32m::Rv32mDecoder, rv64i::Rv64iDecoder, rv64m::Rv64mDecoder, zicsr::ZicsrDecoder,
+                zifencei::ZifenceiDecoder, Decoder,
+            },
+            executor::{
+                privileged::PrivilegedExecutor, rv32f::Rv32fExecutor, rv32i::Rv32iExecutor,
+                rv32m::Rv32mExecutor, rv64i::Rv64iExecutor, rv64m::Rv64mExecutor,
+                zicsr::ZicsrExecutor, zifencei::ZifenceiExecutor, Executor,
+            },
+            f::FloatingPointRegister,
+            pc::ProgramCounter,
+            x::{IntegerRegister, A0},
         },
-        executor::{
-            privileged::PrivilegedExecutor, rv32f::Rv32fExecutor, rv32i::Rv32iExecutor,
-            rv32m::Rv32mExecutor, rv64i::Rv64iExecutor, rv64m::Rv64mExecutor, zicsr::ZicsrExecutor,
-            zifencei::ZifenceiExecutor, Executor,
-        },
-        f::FloatingPointRegister,
-        pc::ProgramCounter,
-        x::{IntegerRegister, A0},
     },
+    isa::privileged::PrivilegeMode,
 };
 
 #[derive(Default)]
@@ -31,6 +34,7 @@ pub struct Cpu {
     f: FloatingPointRegister,
     pc: ProgramCounter,
     csr: ControlAndStatusRegister,
+    privilege_mode: PrivilegeMode,
     pub bus: SystemBus,
 }
 

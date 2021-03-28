@@ -6,11 +6,14 @@ use crate::{
             pc::ProgramCounter, x::IntegerRegister,
         },
     },
-    isa::instruction::{
-        rv32m::{
-            Rv32mOpcodeB, Rv32mOpcodeI, Rv32mOpcodeJ, Rv32mOpcodeR, Rv32mOpcodeS, Rv32mOpcodeU,
+    isa::{
+        instruction::{
+            rv32m::{
+                Rv32mOpcodeB, Rv32mOpcodeI, Rv32mOpcodeJ, Rv32mOpcodeR, Rv32mOpcodeS, Rv32mOpcodeU,
+            },
+            Instruction,
         },
-        Instruction,
+        privileged::cause::Cause,
     },
 };
 
@@ -38,7 +41,7 @@ impl Executor for Rv32mExecutor {
         _: &mut FloatingPointRegister,
         _: &mut ControlAndStatusRegister,
         _: &mut SystemBus,
-    ) {
+    ) -> Result<(), Cause> {
         if let Instruction::TypeR {
             opcode,
             rd,
@@ -49,69 +52,71 @@ impl Executor for Rv32mExecutor {
         } = instruction
         {
             match opcode {
-                Rv32mOpcodeR::Mul => x.writeu(rd, x.readu(rs1).wrapping_mul(x.readu(rs2))),
-                Rv32mOpcodeR::Mulh => x.writeu(
+                Rv32mOpcodeR::Mul => Ok(x.writeu(rd, x.readu(rs1).wrapping_mul(x.readu(rs2)))),
+                Rv32mOpcodeR::Mulh => Ok(x.writeu(
                     rd,
                     ((x.readi(rs1) as i128).wrapping_mul(x.readi(rs2) as i128) >> 64) as u64,
-                ),
-                Rv32mOpcodeR::Mulhsu => x.writeu(
+                )),
+                Rv32mOpcodeR::Mulhsu => Ok(x.writeu(
                     rd,
                     ((x.readi(rs1) as i128 as u128).wrapping_mul(x.readi(rs2) as u128) >> 64)
                         as u64,
-                ),
-                Rv32mOpcodeR::Mulhu => x.writeu(
+                )),
+                Rv32mOpcodeR::Mulhu => Ok(x.writeu(
                     rd,
                     ((x.readi(rs1) as u128).wrapping_mul(x.readi(rs2) as u128) >> 64) as u64,
-                ),
+                )),
                 Rv32mOpcodeR::Div => {
                     let dividend = x.readi(rs1);
                     let divisor = x.readi(rs2);
-                    x.writei(
+                    Ok(x.writei(
                         rd,
                         if divisor == 0 {
                             i64::MAX
                         } else {
                             dividend.wrapping_div(divisor)
                         },
-                    )
+                    ))
                 }
                 Rv32mOpcodeR::Divu => {
                     let dividend = x.readu(rs1);
                     let divisor = x.readu(rs2);
-                    x.writeu(
+                    Ok(x.writeu(
                         rd,
                         if divisor == 0 {
                             u64::MAX
                         } else {
                             dividend.wrapping_div(divisor)
                         },
-                    )
+                    ))
                 }
                 Rv32mOpcodeR::Rem => {
                     let dividend = x.readi(rs1);
                     let divisor = x.readi(rs2);
-                    x.writei(
+                    Ok(x.writei(
                         rd,
                         if divisor == 0 {
                             dividend
                         } else {
                             dividend.wrapping_rem(divisor)
                         },
-                    )
+                    ))
                 }
                 Rv32mOpcodeR::Remu => {
                     let dividend = x.readu(rs1);
                     let divisor = x.readu(rs2);
-                    x.writeu(
+                    Ok(x.writeu(
                         rd,
                         if divisor == 0 {
                             dividend
                         } else {
                             dividend.wrapping_rem(divisor)
                         },
-                    )
+                    ))
                 }
             }
+        } else {
+            Ok(())
         }
     }
 }

@@ -9,11 +9,14 @@ use crate::{
             x::IntegerRegister,
         },
     },
-    isa::instruction::{
-        zicsr::{
-            ZicsrOpcodeB, ZicsrOpcodeI, ZicsrOpcodeJ, ZicsrOpcodeR, ZicsrOpcodeS, ZicsrOpcodeU,
+    isa::{
+        instruction::{
+            zicsr::{
+                ZicsrOpcodeB, ZicsrOpcodeI, ZicsrOpcodeJ, ZicsrOpcodeR, ZicsrOpcodeS, ZicsrOpcodeU,
+            },
+            Instruction,
         },
-        Instruction,
+        privileged::cause::Cause,
     },
 };
 
@@ -41,7 +44,7 @@ impl Executor for ZicsrExecutor {
         _: &mut FloatingPointRegister,
         csr: &mut ControlAndStatusRegister,
         _: &mut SystemBus,
-    ) {
+    ) -> Result<(), Cause> {
         if let Instruction::TypeI {
             opcode,
             rd,
@@ -51,13 +54,15 @@ impl Executor for ZicsrExecutor {
         } = instruction
         {
             match opcode {
-                ZicsrOpcodeI::Csrrw => x.writeu(rd, csr.csrrw(imm & MASK_12BIT, x.readu(rs1))),
-                ZicsrOpcodeI::Csrrs => x.writeu(rd, csr.csrrs(imm & MASK_12BIT, x.readu(rs1))),
-                ZicsrOpcodeI::Csrrc => x.writeu(rd, csr.csrrc(imm & MASK_12BIT, x.readu(rs1))),
-                ZicsrOpcodeI::Csrrwi => x.writeu(rd, csr.csrrw(imm & MASK_12BIT, rs1 as u64)),
-                ZicsrOpcodeI::Csrrsi => x.writeu(rd, csr.csrrs(imm & MASK_12BIT, rs1 as u64)),
-                ZicsrOpcodeI::Csrrci => x.writeu(rd, csr.csrrc(imm & MASK_12BIT, rs1 as u64)),
+                ZicsrOpcodeI::Csrrw => Ok(x.writeu(rd, csr.csrrw(imm & MASK_12BIT, x.readu(rs1)))),
+                ZicsrOpcodeI::Csrrs => Ok(x.writeu(rd, csr.csrrs(imm & MASK_12BIT, x.readu(rs1)))),
+                ZicsrOpcodeI::Csrrc => Ok(x.writeu(rd, csr.csrrc(imm & MASK_12BIT, x.readu(rs1)))),
+                ZicsrOpcodeI::Csrrwi => Ok(x.writeu(rd, csr.csrrw(imm & MASK_12BIT, rs1 as u64))),
+                ZicsrOpcodeI::Csrrsi => Ok(x.writeu(rd, csr.csrrs(imm & MASK_12BIT, rs1 as u64))),
+                ZicsrOpcodeI::Csrrci => Ok(x.writeu(rd, csr.csrrc(imm & MASK_12BIT, rs1 as u64))),
             }
+        } else {
+            Ok(())
         }
     }
 }

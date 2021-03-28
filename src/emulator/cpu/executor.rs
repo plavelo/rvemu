@@ -15,7 +15,7 @@ use crate::{
             x::IntegerRegister,
         },
     },
-    isa::instruction::Instruction,
+    isa::{instruction::Instruction, privileged::cause::Cause},
 };
 
 const MASK_3BIT: u64 = 0b111;
@@ -45,5 +45,5 @@ pub trait Executor {
         f: &mut FloatingPointRegister,
         csr: &mut ControlAndStatusRegister,
         bus: &mut SystemBus,
-    );
+    ) -> Result<(), Cause>;
 }

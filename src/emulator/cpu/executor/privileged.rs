@@ -6,12 +6,15 @@ use crate::{
             pc::ProgramCounter, x::IntegerRegister,
         },
     },
-    isa::instruction::{
-        privileged::{
-            PrivilegedOpcodeB, PrivilegedOpcodeI, PrivilegedOpcodeJ, PrivilegedOpcodeR,
-            PrivilegedOpcodeS, PrivilegedOpcodeU,
+    isa::{
+        instruction::{
+            privileged::{
+                PrivilegedOpcodeB, PrivilegedOpcodeI, PrivilegedOpcodeJ, PrivilegedOpcodeR,
+                PrivilegedOpcodeS, PrivilegedOpcodeU,
+            },
+            Instruction,
         },
-        Instruction,
+        privileged::cause::Cause,
     },
 };
 
@@ -39,7 +42,7 @@ impl Executor for PrivilegedExecutor {
         _: &mut FloatingPointRegister,
         _: &mut ControlAndStatusRegister,
         _: &mut SystemBus,
-    ) {
+    ) -> Result<(), Cause> {
         if let Instruction::TypeR {
             opcode,
             rd: _,
@@ -50,12 +53,14 @@ impl Executor for PrivilegedExecutor {
         } = instruction
         {
             match opcode {
-                PrivilegedOpcodeR::Uret => {}      // not yet supported
-                PrivilegedOpcodeR::Sret => {}      // not yet supported
-                PrivilegedOpcodeR::Mret => {}      // not yet supported
-                PrivilegedOpcodeR::Wfi => {}       // not yet supported
-                PrivilegedOpcodeR::SfenceVma => {} // not yet supported
+                PrivilegedOpcodeR::Uret => Ok(()),      // not yet supported
+                PrivilegedOpcodeR::Sret => Ok(()),      // not yet supported
+                PrivilegedOpcodeR::Mret => Ok(()),      // not yet supported
+                PrivilegedOpcodeR::Wfi => Ok(()),       // not yet supported
+                PrivilegedOpcodeR::SfenceVma => Ok(()), // not yet supported
             }
+        } else {
+            Ok(())
         }
     }
 }

@@ -6,12 +6,15 @@ use crate::{
             pc::ProgramCounter, x::IntegerRegister,
         },
     },
-    isa::instruction::{
-        zifencei::{
-            ZifenceiOpcodeB, ZifenceiOpcodeI, ZifenceiOpcodeJ, ZifenceiOpcodeR, ZifenceiOpcodeS,
-            ZifenceiOpcodeU,
+    isa::{
+        instruction::{
+            zifencei::{
+                ZifenceiOpcodeB, ZifenceiOpcodeI, ZifenceiOpcodeJ, ZifenceiOpcodeR,
+                ZifenceiOpcodeS, ZifenceiOpcodeU,
+            },
+            Instruction,
         },
-        Instruction,
+        privileged::cause::Cause,
     },
 };
 
@@ -39,7 +42,7 @@ impl Executor for ZifenceiExecutor {
         _: &mut FloatingPointRegister,
         _: &mut ControlAndStatusRegister,
         _: &mut SystemBus,
-    ) {
+    ) -> Result<(), Cause> {
         if let Instruction::TypeI {
             opcode,
             rd: _,
@@ -49,8 +52,10 @@ impl Executor for ZifenceiExecutor {
         } = instruction
         {
             match opcode {
-                ZifenceiOpcodeI::FenceI => {} // not yet supported
+                ZifenceiOpcodeI::FenceI => Ok(()), // not yet supported
             }
+        } else {
+            Ok(())
         }
     }
 }

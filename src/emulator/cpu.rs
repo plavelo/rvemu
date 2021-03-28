@@ -25,7 +25,7 @@ use crate::{
             x::{IntegerRegister, A0},
         },
     },
-    isa::privileged::PrivilegeMode,
+    isa::privileged::mode::PrivilegeMode,
 };
 
 #[derive(Default)]

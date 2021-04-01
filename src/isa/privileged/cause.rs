@@ -52,4 +52,8 @@ impl Cause {
             Cause::StorePageFault => 15,
         }
     }
+
+    fn is_interrupt(&self) -> bool {
+        self.to_primitive() >> 63 == 1
+    }
 }

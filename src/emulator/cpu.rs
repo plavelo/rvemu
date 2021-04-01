@@ -25,7 +25,10 @@ use crate::{
             x::{IntegerRegister, A0},
         },
     },
-    isa::privileged::mode::PrivilegeMode,
+    isa::{
+        csr::{machine_level::*, supervisor_level::*},
+        privileged::{cause::Cause, mode::PrivilegeMode},
+    },
 };
 
 #[derive(Default)]
@@ -128,5 +131,47 @@ impl Cpu {
             }
         }
         self.x.readu(A0)
+    }
+
+    fn delegated_privilege_mode(&self, cause: Cause) -> PrivilegeMode {
+        let m_addr = if cause.is_interrupt() {
+            MIDELEG
+        } else {
+            MEDELEG
+        };
+        let s_addr = if cause.is_interrupt() {
+            SIDELEG
+        } else {
+            SEDELEG
+        };
+        let code = cause.exception_code();
+        if ((self.csr.csrrs(m_addr, 0) >> code) & 1) == 0 {
+            PrivilegeMode::MachineMode
+        } else if ((self.csr.csrrs(s_addr, 0) >> code) & 1) == 0 {
+            PrivilegeMode::MachineMode
+        } else {
+            PrivilegeMode::UserMode
+        }
+    }
+
+    fn handle_trap(&self) {
+        //  1. U-modeにてtrapが発生21した。trapの節で述べたようにsstatus.SIEのbit値に関わらず発生する。
+        //  2. scauseにtrapの発生原因が入る。例えばecallの場合、bit31(Interrupt)=0, Exception code(bit3-0)=4b1000=8となる
+        //  3. sepcに1で発生した箇所のprogram counterが入る22
+        //  4. stvalにexception-specific valueが入る(例えば、page-fault exceptionだったら、page faultが発生したvirtual addressが格納される)
+        //  5. sstatus.SPP(S-mode Privious Privilege) <~ U-mode(00)に設定
+        //  6. sstatus.SPIE <~ sstatus.SIE(Software Interrupt Enable) [SIEをsave]
+        //  7. sstatus.SIE <~ 0 [always]
+        //  8. S-modeに遷移
+        //  9. pc <~ stvecの関数アドレス(uservec関数)にセットされる
+        // 10. [trap handlerの処理; software処理開始]
+        // 11. integer and floating-point registers達をsscratch CSRに退避し、S-modeで使うべきregisterをrestoreする(uservec関数)
+        // 12. 次のtrapに備えて、proc構造体sscratchから9のinteger and floating-point registers達をrestoreする(userret関数)
+        // 13. sret実行
+        // 14. sstatus.SIE <- sstatus.SPIE(=1)
+        // 15. U-modeに遷移する
+        // 16. sstatus.SPIE <~ 1 [always]
+        // 17. sstatus.SPP <~ 00(U-mode) [always]
+        // 18. pc(program counter) <~ sepc CSR
     }
 }

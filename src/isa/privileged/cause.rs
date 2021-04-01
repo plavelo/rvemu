@@ -53,7 +53,11 @@ impl Cause {
         }
     }
 
-    fn is_interrupt(&self) -> bool {
+    pub fn is_interrupt(&self) -> bool {
         self.to_primitive() >> 63 == 1
+    }
+
+    pub fn exception_code(&self) -> u64 {
+        self.to_primitive() & 0b1111
     }
 }

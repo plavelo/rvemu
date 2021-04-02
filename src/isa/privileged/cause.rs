@@ -25,7 +25,7 @@ pub enum Cause {
 }
 
 impl Cause {
-    fn to_primitive(&self) -> u64 {
+    pub fn to_primitive(&self) -> u64 {
         match self {
             Cause::UserSoftwareInterrupt => 1u64 << 63 | 0,
             Cause::SupervisorSoftwareInterrupt => 1u64 << 63 | 1,

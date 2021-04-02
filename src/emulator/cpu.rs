@@ -26,7 +26,7 @@ use crate::{
         },
     },
     isa::{
-        csr::{machine_level::*, supervisor_level::*},
+        csr::{machine_level::*, supervisor_level::*, user_level::*},
         privileged::{cause::Cause, mode::PrivilegeMode},
     },
 };
@@ -49,7 +49,7 @@ impl Cpu {
             // fetch an instruction
             let instruction = self.bus.load32(address);
             // decode and execute the instruction
-            if let Some(decoded) = PrivilegedDecoder::decode(instruction) {
+            let result = if let Some(decoded) = PrivilegedDecoder::decode(instruction) {
                 PrivilegedExecutor::execute(
                     decoded,
                     &mut self.pc,
@@ -133,7 +133,7 @@ impl Cpu {
         self.x.readu(A0)
     }
 
-    fn delegated_privilege_mode(&self, cause: Cause) -> PrivilegeMode {
+    fn delegated_privilege_mode(&mut self, cause: &Cause) -> PrivilegeMode {
         let m_addr = if cause.is_interrupt() {
             MIDELEG
         } else {
@@ -154,10 +154,33 @@ impl Cpu {
         }
     }
 
-    fn handle_trap(&self) {
-        //  1. U-modeにてtrapが発生21した。trapの節で述べたようにsstatus.SIEのbit値に関わらず発生する。
-        //  2. scauseにtrapの発生原因が入る。例えばecallの場合、bit31(Interrupt)=0, Exception code(bit3-0)=4b1000=8となる
-        //  3. sepcに1で発生した箇所のprogram counterが入る22
+    fn select_address(
+        &self,
+        privilege_mode: &PrivilegeMode,
+        m_address: u64,
+        s_address: u64,
+        u_address: u64,
+    ) -> u64 {
+        match privilege_mode {
+            PrivilegeMode::MachineMode => m_address,
+            PrivilegeMode::SupervisorMode => s_address,
+            PrivilegeMode::UserMode => u_address,
+        }
+    }
+
+    fn handle_trap(&mut self, cause: &Cause, pc: &ProgramCounter) {
+        let privilege_mode = self.delegated_privilege_mode(cause);
+        // set cause register
+        let cause_address = self.select_address(&privilege_mode, MCAUSE, SCAUSE, UCAUSE);
+        self.csr.csrrw(cause_address, cause.to_primitive());
+
+        // set exception program counter
+        let epc_address = self.select_address(&privilege_mode, MEPC, SEPC, UEPC);
+        self.csr.csrrw(epc_address, pc.read());
+
+        // set trap value register
+        let tval_address = self.select_address(&privilege_mode, MTVAL, STVAL, UTVAL);
+
         //  4. stvalにexception-specific valueが入る(例えば、page-fault exceptionだったら、page faultが発生したvirtual addressが格納される)
         //  5. sstatus.SPP(S-mode Privious Privilege) <~ U-mode(00)に設定
         //  6. sstatus.SPIE <~ sstatus.SIE(Software Interrupt Enable) [SIEをsave]

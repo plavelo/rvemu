@@ -1,7 +1,8 @@
+#[derive(Copy, Clone)]
 pub enum PrivilegeMode {
-    MachineMode,
-    SupervisorMode,
-    UserMode,
+    MachineMode = 0b11,
+    SupervisorMode = 0b01,
+    UserMode = 0b00,
 }
 
 impl Default for PrivilegeMode {

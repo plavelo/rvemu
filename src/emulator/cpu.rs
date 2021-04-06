@@ -26,10 +26,11 @@ use crate::{
         },
     },
     isa::{
-        csr::{machine_level::*, supervisor_level::*, user_level::*},
+        csr::{machine_level::*, status::*, supervisor_level::*, user_level::*},
         privileged::{cause::Cause, mode::PrivilegeMode},
     },
 };
+use std::ops::Range;
 
 #[derive(Default)]
 pub struct Cpu {
@@ -133,7 +134,11 @@ impl Cpu {
         self.x.readu(A0)
     }
 
-    fn delegated_privilege_mode(&mut self, cause: &Cause) -> PrivilegeMode {
+    fn delegated_privilege_mode(
+        &mut self,
+        csr: &mut ControlAndStatusRegister,
+        cause: &Cause,
+    ) -> PrivilegeMode {
         let m_addr = if cause.is_interrupt() {
             MIDELEG
         } else {
@@ -145,13 +150,39 @@ impl Cpu {
             SEDELEG
         };
         let code = cause.exception_code();
-        if ((self.csr.csrrs(m_addr, 0) >> code) & 1) == 0 {
+        if ((csr.csrrs(m_addr, 0) >> code) & 1) == 0 {
             PrivilegeMode::MachineMode
-        } else if ((self.csr.csrrs(s_addr, 0) >> code) & 1) == 0 {
+        } else if ((csr.csrrs(s_addr, 0) >> code) & 1) == 0 {
             PrivilegeMode::MachineMode
         } else {
             PrivilegeMode::UserMode
         }
+    }
+
+    fn update_status(
+        &self,
+        csr: &mut ControlAndStatusRegister,
+        address: u64,
+        field: &Range<usize>,
+        value: u64,
+    ) {
+        let length = (field.end - field.start) as u64;
+        let mask = !((2 ^ length) - 1);
+        let shifted_value = value << field.start;
+        csr.csrrc(address, mask);
+        csr.csrrs(address, shifted_value);
+    }
+
+    fn read_status_field(
+        &self,
+        csr: &mut ControlAndStatusRegister,
+        address: u64,
+        field: &Range<usize>,
+    ) -> u64 {
+        let status = csr.csrrs(address, 0);
+        let length = (field.end - field.start) as u64;
+        let mask = !((2 ^ length) - 1);
+        (status >> field.start) & mask
     }
 
     fn select_address(
@@ -168,8 +199,27 @@ impl Cpu {
         }
     }
 
-    fn handle_trap(&mut self, cause: &Cause, pc: &ProgramCounter) {
-        let privilege_mode = self.delegated_privilege_mode(cause);
+    fn select_status_field(
+        &self,
+        privilege_mode: &PrivilegeMode,
+        m_field: Range<usize>,
+        s_field: Range<usize>,
+        u_field: Range<usize>,
+    ) -> Range<usize> {
+        match privilege_mode {
+            PrivilegeMode::MachineMode => m_field,
+            PrivilegeMode::SupervisorMode => s_field,
+            PrivilegeMode::UserMode => u_field,
+        }
+    }
+
+    fn handle_trap(
+        &mut self,
+        cause: &Cause,
+        csr: &mut ControlAndStatusRegister,
+        pc: &ProgramCounter,
+    ) {
+        let privilege_mode = self.delegated_privilege_mode(csr, cause);
         // set cause register
         let cause_address = self.select_address(&privilege_mode, MCAUSE, SCAUSE, UCAUSE);
         self.csr.csrrw(cause_address, cause.to_primitive());
@@ -180,12 +230,34 @@ impl Cpu {
 
         // set trap value register
         let tval_address = self.select_address(&privilege_mode, MTVAL, STVAL, UTVAL);
-
         //  4. stvalにexception-specific valueが入る(例えば、page-fault exceptionだったら、page faultが発生したvirtual addressが格納される)
-        //  5. sstatus.SPP(S-mode Privious Privilege) <~ U-mode(00)に設定
-        //  6. sstatus.SPIE <~ sstatus.SIE(Software Interrupt Enable) [SIEをsave]
-        //  7. sstatus.SIE <~ 0 [always]
-        //  8. S-modeに遷移
+
+        // set previous privilege
+        let status_address = self.select_address(&privilege_mode, MSTATUS, SSTATUS, USTATUS);
+        match privilege_mode {
+            PrivilegeMode::MachineMode => {
+                self.update_status(csr, status_address, &STATUS_MPP, self.privilege_mode as u64)
+            }
+            PrivilegeMode::SupervisorMode => {
+                self.update_status(csr, status_address, &STATUS_SPP, self.privilege_mode as u64)
+            }
+            PrivilegeMode::UserMode => {}
+        }
+
+        // set previous interrupt enable
+        let ie_field =
+            self.select_status_field(&privilege_mode, STATUS_MIE, STATUS_SIE, STATUS_UIE);
+        let ie = self.read_status_field(csr, status_address, &ie_field);
+        let pie_field =
+            self.select_status_field(&privilege_mode, STATUS_MPIE, STATUS_SPIE, STATUS_UPIE);
+        self.update_status(csr, status_address, &pie_field, ie);
+
+        // disable interrupt enable
+        self.update_status(csr, status_address, &ie_field, 0);
+
+        // update privilege mode
+        self.privilege_mode = privilege_mode;
+
         //  9. pc <~ stvecの関数アドレス(uservec関数)にセットされる
         // 10. [trap handlerの処理; software処理開始]
         // 11. integer and floating-point registers達をsscratch CSRに退避し、S-modeで使うべきregisterをrestoreする(uservec関数)

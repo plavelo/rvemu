@@ -73,12 +73,12 @@ impl Decoder for Rv32fDecoder {
                         _ => None,
                     },
                     0b1100000 => match rs2 {
-                        0b00000 => Some(Rv32fOpcodeR::FcvtWS),
+                        0b00000 => Some(Rv32fOpcodeR::FcvtWs),
                         0b00001 => Some(Rv32fOpcodeR::FcvtWuS),
                         _ => None,
                     },
                     0b1110000 => match funct3 {
-                        0b000 => Some(Rv32fOpcodeR::FmvXW),
+                        0b000 => Some(Rv32fOpcodeR::FmvXw),
                         0b001 => Some(Rv32fOpcodeR::FclassS),
                         _ => None,
                     },
@@ -89,11 +89,11 @@ impl Decoder for Rv32fDecoder {
                         _ => None,
                     },
                     0b1101000 => match rs2 {
-                        0b00000 => Some(Rv32fOpcodeR::FcvtSW),
+                        0b00000 => Some(Rv32fOpcodeR::FcvtSw),
                         0b00001 => Some(Rv32fOpcodeR::FcvtSWu),
                         _ => None,
                     },
-                    0b1111000 => Some(Rv32fOpcodeR::FmvWX),
+                    0b1111000 => Some(Rv32fOpcodeR::FmvWx),
                     _ => None,
                 },
                 instruction,

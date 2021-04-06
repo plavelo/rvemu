@@ -16,16 +16,16 @@ pub enum Rv32fOpcodeR {
     FsgnjxS,
     FminS,
     FmaxS,
-    FcvtWS,
+    FcvtWs,
     FcvtWuS,
-    FmvXW,
+    FmvXw,
     FeqS,
     FltS,
     FleS,
     FclassS,
-    FcvtSW,
+    FcvtSw,
     FcvtSWu,
-    FmvWX,
+    FmvWx,
 }
 
 impl fmt::Display for Rv32fOpcodeR {
@@ -45,16 +45,16 @@ impl fmt::Display for Rv32fOpcodeR {
             Rv32fOpcodeR::FsgnjxS => f.write_str("Rv32f::FsgnjxS"),
             Rv32fOpcodeR::FminS => f.write_str("Rv32f::FminS"),
             Rv32fOpcodeR::FmaxS => f.write_str("Rv32f::FmaxS"),
-            Rv32fOpcodeR::FcvtWS => f.write_str("Rv32f::FcvtWS"),
+            Rv32fOpcodeR::FcvtWs => f.write_str("Rv32f::FcvtWS"),
             Rv32fOpcodeR::FcvtWuS => f.write_str("Rv32f::FcvtWuS"),
-            Rv32fOpcodeR::FmvXW => f.write_str("Rv32f::FmvXW"),
+            Rv32fOpcodeR::FmvXw => f.write_str("Rv32f::FmvXW"),
             Rv32fOpcodeR::FeqS => f.write_str("Rv32f::FeqS"),
             Rv32fOpcodeR::FltS => f.write_str("Rv32f::FltS"),
             Rv32fOpcodeR::FleS => f.write_str("Rv32f::FleS"),
             Rv32fOpcodeR::FclassS => f.write_str("Rv32f::FclassS"),
-            Rv32fOpcodeR::FcvtSW => f.write_str("Rv32f::FcvtSW"),
+            Rv32fOpcodeR::FcvtSw => f.write_str("Rv32f::FcvtSW"),
             Rv32fOpcodeR::FcvtSWu => f.write_str("Rv32f::FcvatSWu"),
-            Rv32fOpcodeR::FmvWX => f.write_str("Rv32f::FmvWX"),
+            Rv32fOpcodeR::FmvWx => f.write_str("Rv32f::FmvWX"),
         }
     }
 }

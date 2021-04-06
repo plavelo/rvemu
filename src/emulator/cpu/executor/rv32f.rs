@@ -180,14 +180,14 @@ impl Executor for Rv32fExecutor {
                         let max = if val1.lt(val2) { val2 } else { val1 };
                         Ok(f.write(rd, max.to_bits()))
                     }
-                    Rv32fOpcodeR::FcvtWS => {
+                    Rv32fOpcodeR::FcvtWs => {
                         Ok(x.writei(rd, F32::from_bits(f.read(rs1)).to_i32(rm, false) as i64))
                     }
                     Rv32fOpcodeR::FcvtWuS => Ok(x.writei(
                         rd,
                         F32::from_bits(f.read(rs1)).to_u32(rm, false) as i32 as i64,
                     )),
-                    Rv32fOpcodeR::FmvXW => Ok(x.writei(rd, f.read(rs1) as i32 as i64)),
+                    Rv32fOpcodeR::FmvXw => Ok(x.writei(rd, f.read(rs1) as i32 as i64)),
                     Rv32fOpcodeR::FeqS => {
                         let val1 = F32::from_bits(f.read(rs1));
                         let val2 = F32::from_bits(f.read(rs2));
@@ -230,13 +230,13 @@ impl Executor for Rv32fExecutor {
                         };
                         Ok(x.writeu(rd, class))
                     }
-                    Rv32fOpcodeR::FcvtSW => {
+                    Rv32fOpcodeR::FcvtSw => {
                         Ok(f.write(rd, F32::from_i32(x.readi(rs1) as i32, rm).to_bits()))
                     }
                     Rv32fOpcodeR::FcvtSWu => {
                         Ok(f.write(rd, F32::from_u32(x.readi(rs1) as u32, rm).to_bits()))
                     }
-                    Rv32fOpcodeR::FmvWX => Ok(f.write(rd, x.readu(rs1) as u32)),
+                    Rv32fOpcodeR::FmvWx => Ok(f.write(rd, x.readu(rs1) as u32)),
                 }
             }
             Instruction::TypeI {

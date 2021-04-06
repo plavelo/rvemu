@@ -129,8 +129,13 @@ impl Cpu {
 
             // handle the trap
             if let Err(cause) = result {
-                let (prv, pc) =
-                    handle_trap(&cause, self.pc.read(), instruction, self.privilege_mode, &mut self.csr);
+                let (prv, pc) = handle_trap(
+                    &cause,
+                    self.pc.read(),
+                    instruction,
+                    self.privilege_mode,
+                    &mut self.csr,
+                );
                 self.privilege_mode = prv;
                 self.pc.jump(pc);
             }

@@ -127,7 +127,7 @@ impl Cpu {
 
             // handle the trap
             if let Err(cause) = result {
-                let (prv, pc) = handle_trap(
+                let (prv, pc) = handle_cause(
                     &cause,
                     self.pc.read(),
                     instruction,

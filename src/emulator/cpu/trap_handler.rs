@@ -2,7 +2,10 @@ use crate::{
     emulator::cpu::csr::ControlAndStatusRegister,
     isa::{
         csr::{machine_level::*, status::*, supervisor_level::*, user_level::*},
-        privileged::{cause::Cause, mode::PrivilegeMode},
+        privileged::{
+            cause::{Cause, Exception},
+            mode::PrivilegeMode,
+        },
     },
 };
 use std::ops::Range;
@@ -22,34 +25,10 @@ fn delegated_privilege_mode(csr: &mut ControlAndStatusRegister, cause: &Cause) -
     if ((csr.csrrs(m_addr, 0) >> code) & 1) == 0 {
         PrivilegeMode::MachineMode
     } else if ((csr.csrrs(s_addr, 0) >> code) & 1) == 0 {
-        PrivilegeMode::MachineMode
+        PrivilegeMode::SupervisorMode
     } else {
         PrivilegeMode::UserMode
     }
-}
-
-fn update_status(
-    csr: &mut ControlAndStatusRegister,
-    address: u64,
-    field: &Range<usize>,
-    value: u64,
-) {
-    let length = (field.end - field.start) as u64;
-    let mask = !((2 ^ length) - 1);
-    let shifted_value = value << field.start;
-    csr.csrrc(address, mask);
-    csr.csrrs(address, shifted_value);
-}
-
-fn read_status_field(
-    csr: &mut ControlAndStatusRegister,
-    address: u64,
-    field: &Range<usize>,
-) -> u64 {
-    let status = csr.csrrs(address, 0);
-    let length = (field.end - field.start) as u64;
-    let mask = !((2 ^ length) - 1);
-    (status >> field.start) & mask
 }
 
 fn select_address(
@@ -78,54 +57,82 @@ fn select_status_field(
     }
 }
 
+fn read_status_field(
+    csr: &mut ControlAndStatusRegister,
+    address: u64,
+    field: &Range<usize>,
+) -> u64 {
+    let status = csr.csrrs(address, 0);
+    let length = (field.end - field.start) as u64;
+    let mask = !((2 ^ length) - 1);
+    (status >> field.start) & mask
+}
+
+fn update_status_field(
+    csr: &mut ControlAndStatusRegister,
+    address: u64,
+    field: &Range<usize>,
+    value: u64,
+) {
+    let length = (field.end - field.start) as u64;
+    let mask = !((2 ^ length) - 1);
+    let shifted_value = value << field.start;
+    csr.csrrc(address, mask);
+    csr.csrrs(address, shifted_value);
+}
+
 fn select_tval(cause: &Cause, faulting_address: u64, faulting_instruction: u32) -> u64 {
-    match cause {
-        Cause::InstructionAddressMisaligned
-        | Cause::LoadAddressMisaligned
-        | Cause::StoreAddressMisaligned
-        | Cause::Breakpoint
-        | Cause::InstructionAccessFault
-        | Cause::LoadAccessFault
-        | Cause::StoreAccessFault
-        | Cause::InstructionPageFault
-        | Cause::LoadPageFault
-        | Cause::StorePageFault => faulting_address,
-        Cause::IllegalInstruction => faulting_instruction as u64,
-        _ => 0,
+    if let Cause::Exception(exception) = cause {
+        match exception {
+            Exception::InstructionAddressMisaligned
+            | Exception::LoadAddressMisaligned
+            | Exception::StoreAddressMisaligned
+            | Exception::Breakpoint
+            | Exception::InstructionAccessFault
+            | Exception::LoadAccessFault
+            | Exception::StoreAccessFault
+            | Exception::InstructionPageFault
+            | Exception::LoadPageFault
+            | Exception::StorePageFault => faulting_address,
+            Exception::IllegalInstruction => faulting_instruction as u64,
+            _ => 0,
+        }
+    } else {
+        0
     }
 }
 
-pub fn handle_trap(
+fn handle_trap(
     cause: &Cause,
     pc_address: u64,
     instruction: u32,
     current_privilege_mode: PrivilegeMode,
     csr: &mut ControlAndStatusRegister,
 ) -> (PrivilegeMode, u64) {
-    let privilege_mode = delegated_privilege_mode(csr, cause);
+    let next_privilege_mode = delegated_privilege_mode(csr, cause);
     // set cause register
-    let cause_address = select_address(&privilege_mode, MCAUSE, SCAUSE, UCAUSE);
+    let cause_address = select_address(&next_privilege_mode, MCAUSE, SCAUSE, UCAUSE);
     csr.csrrw(cause_address, cause.to_primitive());
 
     // set exception program counter
-    let epc_address = select_address(&privilege_mode, MEPC, SEPC, UEPC);
+    let epc_address = select_address(&next_privilege_mode, MEPC, SEPC, UEPC);
     csr.csrrw(epc_address, pc_address);
 
     // set trap value register
-    let tval_address = select_address(&privilege_mode, MTVAL, STVAL, UTVAL);
+    let tval_address = select_address(&next_privilege_mode, MTVAL, STVAL, UTVAL);
     let tval = select_tval(&cause, pc_address, instruction);
     csr.csrrw(tval_address, tval);
 
     // set previous privilege
-    let status_address = select_address(&privilege_mode, MSTATUS, SSTATUS, USTATUS);
-    match privilege_mode {
-        PrivilegeMode::MachineMode => update_status(
+    let status_address = select_address(&next_privilege_mode, MSTATUS, SSTATUS, USTATUS);
+    match next_privilege_mode {
+        PrivilegeMode::MachineMode => update_status_field(
             csr,
             status_address,
             &STATUS_MPP,
             current_privilege_mode as u64,
         ),
-        PrivilegeMode::SupervisorMode => update_status(
+        PrivilegeMode::SupervisorMode => update_status_field(
             csr,
             status_address,
             &STATUS_SPP,
@@ -135,26 +142,75 @@ pub fn handle_trap(
     }
 
     // set previous interrupt enable
-    let ie_field = select_status_field(&privilege_mode, STATUS_MIE, STATUS_SIE, STATUS_UIE);
+    let ie_field = select_status_field(&next_privilege_mode, STATUS_MIE, STATUS_SIE, STATUS_UIE);
     let ie = read_status_field(csr, status_address, &ie_field);
-    let pie_field = select_status_field(&privilege_mode, STATUS_MPIE, STATUS_SPIE, STATUS_UPIE);
-    update_status(csr, status_address, &pie_field, ie);
+    let pie_field =
+        select_status_field(&next_privilege_mode, STATUS_MPIE, STATUS_SPIE, STATUS_UPIE);
+    update_status_field(csr, status_address, &pie_field, ie);
 
     // disable interrupt enable
-    update_status(csr, status_address, &ie_field, 0);
+    update_status_field(csr, status_address, &ie_field, 0);
 
     // set pc to trap-vector base-address register
-    let tvec_address = select_address(&privilege_mode, MTVEC, STVEC, UTVEC);
+    let tvec_address = select_address(&next_privilege_mode, MTVEC, STVEC, UTVEC);
     let tvec = csr.csrrs(tvec_address, 0);
-    (privilege_mode, tvec)
+    (next_privilege_mode, tvec)
+}
 
-    // ここからRET後の処理
+fn handle_exception_return(
+    current_privilege_mode: PrivilegeMode,
+    csr: &mut ControlAndStatusRegister,
+) -> (PrivilegeMode, u64) {
+    let status_address = select_address(&current_privilege_mode, MSTATUS, SSTATUS, USTATUS);
+
     // restore interrupt enable
-    // let pie = self.read_status_field(csr, status_address, &pie_field);
-    // self.update_status(csr, status_address, &ie_field, pie);
+    let pie_field = select_status_field(
+        &current_privilege_mode,
+        STATUS_MPIE,
+        STATUS_SPIE,
+        STATUS_UPIE,
+    );
+    let ie_field = select_status_field(&current_privilege_mode, STATUS_MIE, STATUS_SIE, STATUS_UIE);
+    let pie = read_status_field(csr, status_address, &pie_field);
+    update_status_field(csr, status_address, &ie_field, pie);
 
-    // 15. U-modeに遷移する
-    // 16. sstatus.SPIE <~ 1 [always]
-    // 17. sstatus.SPP <~ 00(U-mode) [always]
-    // 18. pc(program counter) <~ sepc CSR
+    // set 1 to previous interrupt enable
+    update_status_field(csr, status_address, &pie_field, 1);
+
+    // read previous privilege
+    let pp = match current_privilege_mode {
+        PrivilegeMode::MachineMode => {
+            PrivilegeMode::from_primitive(read_status_field(csr, status_address, &STATUS_MPP))
+        }
+        PrivilegeMode::SupervisorMode => {
+            PrivilegeMode::from_primitive(read_status_field(csr, status_address, &STATUS_SPP))
+        }
+        PrivilegeMode::UserMode => PrivilegeMode::UserMode,
+    };
+
+    // set 0 to previous privilege
+    match current_privilege_mode {
+        PrivilegeMode::MachineMode => update_status_field(csr, status_address, &STATUS_MPP, 0),
+        PrivilegeMode::SupervisorMode => update_status_field(csr, status_address, &STATUS_SPP, 0),
+        PrivilegeMode::UserMode => {}
+    };
+
+    // read exception program counter
+    let epc_address = select_address(&current_privilege_mode, MEPC, SEPC, UEPC);
+    let epc = csr.csrrs(epc_address, 0);
+
+    (pp, epc)
+}
+
+pub fn handle_cause(
+    cause: &Cause,
+    pc_address: u64,
+    instruction: u32,
+    current_privilege_mode: PrivilegeMode,
+    csr: &mut ControlAndStatusRegister,
+) -> (PrivilegeMode, u64) {
+    match cause {
+        Cause::ExceptionReturn(_) => handle_exception_return(current_privilege_mode, csr),
+        _ => handle_trap(cause, pc_address, instruction, current_privilege_mode, csr),
+    }
 }

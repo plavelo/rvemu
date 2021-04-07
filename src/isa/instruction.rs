@@ -63,7 +63,7 @@ impl<
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Instruction::TypeR {
+            Self::TypeR {
                 opcode,
                 rd,
                 funct3,
@@ -75,7 +75,7 @@ impl<
                 "Instruction::TypeR {{ opcode: {}, rd: {}, funct3: {}, rs1: {}, rs2: {}, funct7: {} }}",
                 opcode, rd, funct3, rs1, rs2, funct7,
             ),
-            Instruction::TypeI {
+            Self::TypeI {
                 opcode,
                 rd,
                 funct3,
@@ -86,7 +86,7 @@ impl<
                 "Instruction::TypeI {{ opcode: {}, rd: {}, funct3: {}, rs1: {}, imm: {} }}",
                 opcode, rd, funct3, rs1, imm,
             ),
-            Instruction::TypeS {
+            Self::TypeS {
                 opcode,
                 funct3,
                 rs1,
@@ -97,7 +97,7 @@ impl<
                 "Instruction::TypeS {{ opcode: {}, funct3: {}, rs1: {}, rs2: {}, imm: {} }}",
                 opcode, funct3, rs1, rs2, imm,
             ),
-            Instruction::TypeB {
+            Self::TypeB {
                 opcode,
                 funct3,
                 rs1,
@@ -108,12 +108,12 @@ impl<
                 "Instruction::TypeB {{ opcode: {}, funct3: {}, rs1: {}, rs2: {}, imm: {} }}",
                 opcode, funct3, rs1, rs2, imm,
             ),
-            Instruction::TypeU { opcode, rd, imm } => write!(
+            Self::TypeU { opcode, rd, imm } => write!(
                 f,
                 "Instruction::TypeU {{ opcode: {}, rd: {}, imm: {} }}",
                 opcode, rd, imm,
             ),
-            Instruction::TypeJ { opcode, rd, imm } => write!(
+            Self::TypeJ { opcode, rd, imm } => write!(
                 f,
                 "Instruction::TypeJ {{ opcode: {}, rd: {}, imm: {} }}",
                 opcode, rd, imm,

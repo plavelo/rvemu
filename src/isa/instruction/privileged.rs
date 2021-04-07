@@ -12,11 +12,11 @@ pub enum PrivilegedOpcodeR {
 impl fmt::Display for PrivilegedOpcodeR {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            PrivilegedOpcodeR::Uret => f.write_str("Privilege::Uret"),
-            PrivilegedOpcodeR::Sret => f.write_str("Privilege::Sret"),
-            PrivilegedOpcodeR::Mret => f.write_str("Privilege::Mret"),
-            PrivilegedOpcodeR::Wfi => f.write_str("Privilege::Wfi"),
-            PrivilegedOpcodeR::SfenceVma => f.write_str("Privilege::SfenceVma"),
+            Self::Uret => f.write_str("Privilege::Uret"),
+            Self::Sret => f.write_str("Privilege::Sret"),
+            Self::Mret => f.write_str("Privilege::Mret"),
+            Self::Wfi => f.write_str("Privilege::Wfi"),
+            Self::SfenceVma => f.write_str("Privilege::SfenceVma"),
         }
     }
 }

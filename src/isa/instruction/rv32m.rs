@@ -15,14 +15,14 @@ pub enum Rv32mOpcodeR {
 impl fmt::Display for Rv32mOpcodeR {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            Rv32mOpcodeR::Mul => f.write_str("Rv32m::Mul"),
-            Rv32mOpcodeR::Mulh => f.write_str("Rv32m::Mulh"),
-            Rv32mOpcodeR::Mulhsu => f.write_str("Rv32m::Mulhsu"),
-            Rv32mOpcodeR::Mulhu => f.write_str("Rv32m::Mulhu"),
-            Rv32mOpcodeR::Div => f.write_str("Rv32m::Div"),
-            Rv32mOpcodeR::Divu => f.write_str("Rv32m::Divu"),
-            Rv32mOpcodeR::Rem => f.write_str("Rv32m::Rem"),
-            Rv32mOpcodeR::Remu => f.write_str("Rv32m::Remu"),
+            Self::Mul => f.write_str("Rv32m::Mul"),
+            Self::Mulh => f.write_str("Rv32m::Mulh"),
+            Self::Mulhsu => f.write_str("Rv32m::Mulhsu"),
+            Self::Mulhu => f.write_str("Rv32m::Mulhu"),
+            Self::Div => f.write_str("Rv32m::Div"),
+            Self::Divu => f.write_str("Rv32m::Divu"),
+            Self::Rem => f.write_str("Rv32m::Rem"),
+            Self::Remu => f.write_str("Rv32m::Remu"),
         }
     }
 }

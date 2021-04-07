@@ -10,7 +10,7 @@ pub enum ZifenceiOpcodeI {
 impl fmt::Display for ZifenceiOpcodeI {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            ZifenceiOpcodeI::FenceI => f.write_str("Zifencei::FenceI"),
+            Self::FenceI => f.write_str("Zifencei::FenceI"),
         }
     }
 }

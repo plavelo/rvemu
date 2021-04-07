@@ -12,11 +12,11 @@ pub enum Rv64mOpcodeR {
 impl fmt::Display for Rv64mOpcodeR {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            Rv64mOpcodeR::Mulw => f.write_str("Rv64m::Mulw"),
-            Rv64mOpcodeR::Divw => f.write_str("Rv64m::Divw"),
-            Rv64mOpcodeR::Divuw => f.write_str("Rv64m::Divuw"),
-            Rv64mOpcodeR::Remw => f.write_str("Rv64m::Remw"),
-            Rv64mOpcodeR::Remuw => f.write_str("Rv64m::Remuw"),
+            Self::Mulw => f.write_str("Rv64m::Mulw"),
+            Self::Divw => f.write_str("Rv64m::Divw"),
+            Self::Divuw => f.write_str("Rv64m::Divuw"),
+            Self::Remw => f.write_str("Rv64m::Remw"),
+            Self::Remuw => f.write_str("Rv64m::Remuw"),
         }
     }
 }

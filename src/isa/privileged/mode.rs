@@ -10,3 +10,13 @@ impl Default for PrivilegeMode {
         PrivilegeMode::MachineMode
     }
 }
+
+impl PrivilegeMode {
+    pub fn from_primitive(mode: u64) -> Self {
+        match mode {
+            0b11 => Self::MachineMode,
+            0b01 => Self::SupervisorMode,
+            _ => Self::UserMode,
+        }
+    }
+}

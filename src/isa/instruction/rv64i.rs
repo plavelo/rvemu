@@ -12,11 +12,11 @@ pub enum Rv64iOpcodeR {
 impl fmt::Display for Rv64iOpcodeR {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            Rv64iOpcodeR::Sllw => f.write_str("Rv64i::Sllw"),
-            Rv64iOpcodeR::Srlw => f.write_str("Rv64i::Srlw"),
-            Rv64iOpcodeR::Sraw => f.write_str("Rv64i::Sraw"),
-            Rv64iOpcodeR::Addw => f.write_str("Rv64i::Addw"),
-            Rv64iOpcodeR::Subw => f.write_str("Rv64i::Subw"),
+            Self::Sllw => f.write_str("Rv64i::Sllw"),
+            Self::Srlw => f.write_str("Rv64i::Srlw"),
+            Self::Sraw => f.write_str("Rv64i::Sraw"),
+            Self::Addw => f.write_str("Rv64i::Addw"),
+            Self::Subw => f.write_str("Rv64i::Subw"),
         }
     }
 }
@@ -34,12 +34,12 @@ pub enum Rv64iOpcodeI {
 impl fmt::Display for Rv64iOpcodeI {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            Rv64iOpcodeI::Slliw => f.write_str("Rv64i::Slliw"),
-            Rv64iOpcodeI::Srliw => f.write_str("Rv64i::Srliw"),
-            Rv64iOpcodeI::Sraiw => f.write_str("Rv64i::Sraiw"),
-            Rv64iOpcodeI::Addiw => f.write_str("Rv64i::Addiw"),
-            Rv64iOpcodeI::Lwu => f.write_str("Rv64i::Lwu"),
-            Rv64iOpcodeI::Ld => f.write_str("Rv64i::Ld"),
+            Self::Slliw => f.write_str("Rv64i::Slliw"),
+            Self::Srliw => f.write_str("Rv64i::Srliw"),
+            Self::Sraiw => f.write_str("Rv64i::Sraiw"),
+            Self::Addiw => f.write_str("Rv64i::Addiw"),
+            Self::Lwu => f.write_str("Rv64i::Lwu"),
+            Self::Ld => f.write_str("Rv64i::Ld"),
         }
     }
 }
@@ -52,7 +52,7 @@ pub enum Rv64iOpcodeS {
 impl fmt::Display for Rv64iOpcodeS {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            Rv64iOpcodeS::Sd => f.write_str("Rv64i::Sd"),
+            Self::Sd => f.write_str("Rv64i::Sd"),
         }
     }
 }

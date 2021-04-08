@@ -16,7 +16,7 @@ use crate::{
             },
             Instruction,
         },
-        privileged::cause::Cause,
+        privileged::{cause::Cause, mode::PrivilegeMode},
     },
 };
 
@@ -39,6 +39,7 @@ impl Executor for Rv64iExecutor {
             Rv64iOpcodeU,
             Rv64iOpcodeJ,
         >,
+        _: &PrivilegeMode,
         _: &mut ProgramCounter,
         x: &mut IntegerRegister,
         _: &mut FloatingPointRegister,

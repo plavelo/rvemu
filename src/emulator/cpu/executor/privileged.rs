@@ -14,7 +14,7 @@ use crate::{
             },
             Instruction,
         },
-        privileged::cause::Cause,
+        privileged::{cause::Cause, mode::PrivilegeMode},
     },
 };
 
@@ -37,6 +37,7 @@ impl Executor for PrivilegedExecutor {
             PrivilegedOpcodeU,
             PrivilegedOpcodeJ,
         >,
+        _: &PrivilegeMode,
         _: &mut ProgramCounter,
         _: &mut IntegerRegister,
         _: &mut FloatingPointRegister,

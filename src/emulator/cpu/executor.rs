@@ -15,7 +15,10 @@ use crate::{
             x::IntegerRegister,
         },
     },
-    isa::{instruction::Instruction, privileged::cause::Cause},
+    isa::{
+        instruction::Instruction,
+        privileged::{cause::Cause, mode::PrivilegeMode},
+    },
 };
 
 const MASK_3BIT: u64 = 0b111;
@@ -40,6 +43,7 @@ pub trait Executor {
             Self::OpcodeU,
             Self::OpcodeJ,
         >,
+        prv: &PrivilegeMode,
         pc: &mut ProgramCounter,
         x: &mut IntegerRegister,
         f: &mut FloatingPointRegister,

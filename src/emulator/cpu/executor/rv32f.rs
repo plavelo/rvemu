@@ -17,7 +17,7 @@ use crate::{
             },
             Instruction,
         },
-        privileged::cause::Cause,
+        privileged::{cause::Cause, mode::PrivilegeMode},
     },
 };
 use softfloat_wrapper::{Float, RoundingMode, F32};
@@ -63,6 +63,7 @@ impl Executor for Rv32fExecutor {
             Rv32fOpcodeU,
             Rv32fOpcodeJ,
         >,
+        _: &PrivilegeMode,
         _: &mut ProgramCounter,
         x: &mut IntegerRegister,
         f: &mut FloatingPointRegister,

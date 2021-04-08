@@ -1,8 +1,8 @@
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum PrivilegeMode {
-    MachineMode = 0b11,
-    SupervisorMode = 0b01,
     UserMode = 0b00,
+    SupervisorMode = 0b01,
+    MachineMode = 0b11,
 }
 
 impl Default for PrivilegeMode {
@@ -14,9 +14,10 @@ impl Default for PrivilegeMode {
 impl PrivilegeMode {
     pub fn from_primitive(mode: u64) -> Self {
         match mode {
-            0b11 => Self::MachineMode,
+            0 => Self::UserMode,
             0b01 => Self::SupervisorMode,
-            _ => Self::UserMode,
+            0b11 => Self::MachineMode,
+            _ => panic!(),
         }
     }
 }

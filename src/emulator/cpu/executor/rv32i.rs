@@ -16,7 +16,10 @@ use crate::{
             },
             Instruction,
         },
-        privileged::{cause::Cause, mode::PrivilegeMode},
+        privileged::{
+            cause::{Cause, Exception},
+            mode::PrivilegeMode,
+        },
     },
 };
 
@@ -39,7 +42,7 @@ impl Executor for Rv32iExecutor {
             Rv32iOpcodeU,
             Rv32iOpcodeJ,
         >,
-        _: &PrivilegeMode,
+        prv: &PrivilegeMode,
         pc: &mut ProgramCounter,
         x: &mut IntegerRegister,
         _: &mut FloatingPointRegister,
@@ -93,8 +96,18 @@ impl Executor for Rv32iExecutor {
                     pc.jump((x.readi(rs1).wrapping_add(imm as i64) & !1) as u64);
                     Ok(x.writeu(rd, last.wrapping_add(4)))
                 }
-                Rv32iOpcodeI::Fence => Ok(()),  // not yet supported
-                Rv32iOpcodeI::Ecall => Ok(()),  // not yet supported
+                Rv32iOpcodeI::Fence => Ok(()), // not yet supported
+                Rv32iOpcodeI::Ecall => match prv {
+                    PrivilegeMode::UserMode => {
+                        Err(Cause::Exception(Exception::EnvironmentCallFromUserMode))
+                    }
+                    PrivilegeMode::SupervisorMode => Err(Cause::Exception(
+                        Exception::EnvironmentCallFromSupervisorMode,
+                    )),
+                    PrivilegeMode::MachineMode => {
+                        Err(Cause::Exception(Exception::EnvironmentCallFromMachineMode))
+                    }
+                },
                 Rv32iOpcodeI::Ebreak => Ok(()), // not yet supported
                 Rv32iOpcodeI::Lb => Ok(x.writei(
                     rd,

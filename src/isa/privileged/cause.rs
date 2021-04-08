@@ -25,15 +25,16 @@ pub enum Exception {
     LoadAccessFault,
     StoreAddressMisaligned,
     StoreAccessFault,
-    EnvironmentCallFromUmode,
-    EnvironmentCallFromSmode,
-    EnvironmentCallFromMmode,
+    EnvironmentCallFromUserMode,
+    EnvironmentCallFromSupervisorMode,
+    EnvironmentCallFromMachineMode,
     InstructionPageFault,
     LoadPageFault,
     StorePageFault,
 }
 
 pub enum ExceptionReturn {
+    UserModeExceptionReturn,
     SupervisorModeExceptionReturn,
     MachineModeExceptionReturn,
 }
@@ -95,9 +96,9 @@ impl Exception {
             Self::LoadAccessFault => 5,
             Self::StoreAddressMisaligned => 6,
             Self::StoreAccessFault => 7,
-            Self::EnvironmentCallFromUmode => 8,
-            Self::EnvironmentCallFromSmode => 9,
-            Self::EnvironmentCallFromMmode => 11,
+            Self::EnvironmentCallFromUserMode => 8,
+            Self::EnvironmentCallFromSupervisorMode => 9,
+            Self::EnvironmentCallFromMachineMode => 11,
             Self::InstructionPageFault => 12,
             Self::LoadPageFault => 13,
             Self::StorePageFault => 15,

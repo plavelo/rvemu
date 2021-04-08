@@ -14,7 +14,10 @@ use crate::{
             },
             Instruction,
         },
-        privileged::{cause::Cause, mode::PrivilegeMode},
+        privileged::{
+            cause::{Cause, Exception, ExceptionReturn},
+            mode::PrivilegeMode,
+        },
     },
 };
 
@@ -37,7 +40,7 @@ impl Executor for PrivilegedExecutor {
             PrivilegedOpcodeU,
             PrivilegedOpcodeJ,
         >,
-        _: &PrivilegeMode,
+        prv: &PrivilegeMode,
         _: &mut ProgramCounter,
         _: &mut IntegerRegister,
         _: &mut FloatingPointRegister,
@@ -54,10 +57,34 @@ impl Executor for PrivilegedExecutor {
         } = instruction
         {
             match opcode {
-                PrivilegedOpcodeR::Uret => Ok(()),      // not yet supported
-                PrivilegedOpcodeR::Sret => Ok(()),      // not yet supported
-                PrivilegedOpcodeR::Mret => Ok(()),      // not yet supported
-                PrivilegedOpcodeR::Wfi => Ok(()),       // not yet supported
+                PrivilegedOpcodeR::Uret => {
+                    if prv == &PrivilegeMode::UserMode {
+                        Err(Cause::ExceptionReturn(
+                            ExceptionReturn::UserModeExceptionReturn,
+                        ))
+                    } else {
+                        Err(Cause::Exception(Exception::IllegalInstruction))
+                    }
+                }
+                PrivilegedOpcodeR::Sret => {
+                    if prv == &PrivilegeMode::SupervisorMode {
+                        Err(Cause::ExceptionReturn(
+                            ExceptionReturn::SupervisorModeExceptionReturn,
+                        ))
+                    } else {
+                        Err(Cause::Exception(Exception::IllegalInstruction))
+                    }
+                }
+                PrivilegedOpcodeR::Mret => {
+                    if prv == &PrivilegeMode::MachineMode {
+                        Err(Cause::ExceptionReturn(
+                            ExceptionReturn::MachineModeExceptionReturn,
+                        ))
+                    } else {
+                        Err(Cause::Exception(Exception::IllegalInstruction))
+                    }
+                }
+                PrivilegedOpcodeR::Wfi => Ok(()), // not yet supported
                 PrivilegedOpcodeR::SfenceVma => Ok(()), // not yet supported
             }
         } else {

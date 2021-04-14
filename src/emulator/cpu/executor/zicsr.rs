@@ -55,15 +55,14 @@ impl Executor for ZicsrExecutor {
         } = instruction
         {
             match opcode {
-                ZicsrOpcodeI::Csrrw => Ok(x.writeu(rd, csr.csrrw(imm & MASK_12BIT, x.readu(rs1)))),
-                ZicsrOpcodeI::Csrrs => Ok(x.writeu(rd, csr.csrrs(imm & MASK_12BIT, x.readu(rs1)))),
-                ZicsrOpcodeI::Csrrc => Ok(x.writeu(rd, csr.csrrc(imm & MASK_12BIT, x.readu(rs1)))),
-                ZicsrOpcodeI::Csrrwi => Ok(x.writeu(rd, csr.csrrw(imm & MASK_12BIT, rs1 as u64))),
-                ZicsrOpcodeI::Csrrsi => Ok(x.writeu(rd, csr.csrrs(imm & MASK_12BIT, rs1 as u64))),
-                ZicsrOpcodeI::Csrrci => Ok(x.writeu(rd, csr.csrrc(imm & MASK_12BIT, rs1 as u64))),
+                ZicsrOpcodeI::Csrrw => x.writeu(rd, csr.csrrw(imm & MASK_12BIT, x.readu(rs1))),
+                ZicsrOpcodeI::Csrrs => x.writeu(rd, csr.csrrs(imm & MASK_12BIT, x.readu(rs1))),
+                ZicsrOpcodeI::Csrrc => x.writeu(rd, csr.csrrc(imm & MASK_12BIT, x.readu(rs1))),
+                ZicsrOpcodeI::Csrrwi => x.writeu(rd, csr.csrrw(imm & MASK_12BIT, rs1 as u64)),
+                ZicsrOpcodeI::Csrrsi => x.writeu(rd, csr.csrrs(imm & MASK_12BIT, rs1 as u64)),
+                ZicsrOpcodeI::Csrrci => x.writeu(rd, csr.csrrc(imm & MASK_12BIT, rs1 as u64)),
             }
-        } else {
-            Ok(())
         }
+        Ok(())
     }
 }

@@ -12,7 +12,7 @@ fn run(name: &str) -> bool {
     let mut emulator = Emulator::default();
     if let Ok(f) = file {
         let _ = emulator.load(f);
-        emulator.run() == 1
+        emulator.run() == 0
     } else {
         false
     }
@@ -143,4 +143,19 @@ fn rv64um_p_ok() {
     assert!(run("rv64um-p-remu"), "{}", "rv64um-p-remu");
     assert!(run("rv64um-p-remuw"), "{}", "rv64um-p-remuw");
     assert!(run("rv64um-p-remw"), "{}", "rv64um-p-remw");
+}
+
+#[test]
+fn rv32uf_p_ok() {
+    assert!(run("rv32uf-p-fadd"), "{}", "rv32uf-p-fadd");
+    assert!(run("rv32uf-p-fclass"), "{}", "rv32uf-p-fclass");
+    assert!(run("rv32uf-p-fcmp"), "{}", "rv32uf-p-fcmp");
+    assert!(run("rv32uf-p-fcvt"), "{}", "rv32uf-p-fcvt");
+    assert!(run("rv32uf-p-fcvt_w"), "{}", "rv32uf-p-fcvt_w");
+    assert!(run("rv32uf-p-fdiv"), "{}", "rv32uf-p-fdiv");
+    assert!(run("rv32uf-p-fmadd"), "{}", "rv32uf-p-fmadd");
+    assert!(run("rv32uf-p-fmin"), "{}", "rv32uf-p-fmin");
+    assert!(run("rv32uf-p-ldst"), "{}", "rv32uf-p-ldst");
+    assert!(run("rv32uf-p-move"), "{}", "rv32uf-p-move");
+    assert!(run("rv32uf-p-recoding"), "{}", "rv32uf-p-recoding");
 }

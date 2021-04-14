@@ -1,4 +1,5 @@
-use crate::emulator::memory::Memory;
+pub mod memory;
+use crate::emulator::bus::memory::Memory;
 
 pub enum Size {
     Byte = 1,

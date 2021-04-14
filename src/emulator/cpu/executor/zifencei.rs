@@ -2,16 +2,19 @@ use crate::{
     emulator::{
         bus::SystemBus,
         cpu::{
-            csr::ControlAndStatusRegister, executor::Executor, pc::ProgramCounter,
-            x::IntegerRegister,
+            csr::ControlAndStatusRegister, executor::Executor, f::FloatingPointRegister,
+            pc::ProgramCounter, x::IntegerRegister,
         },
     },
-    isa::instruction::{
-        zifencei::{
-            ZifenceiOpcodeB, ZifenceiOpcodeI, ZifenceiOpcodeJ, ZifenceiOpcodeR, ZifenceiOpcodeS,
-            ZifenceiOpcodeU,
+    isa::{
+        instruction::{
+            zifencei::{
+                ZifenceiOpcodeB, ZifenceiOpcodeI, ZifenceiOpcodeJ, ZifenceiOpcodeR,
+                ZifenceiOpcodeS, ZifenceiOpcodeU,
+            },
+            Instruction,
         },
-        Instruction,
+        privileged::{cause::Cause, mode::PrivilegeMode},
     },
 };
 
@@ -34,48 +37,26 @@ impl Executor for ZifenceiExecutor {
             ZifenceiOpcodeU,
             ZifenceiOpcodeJ,
         >,
+        _: &PrivilegeMode,
         _: &mut ProgramCounter,
         _: &mut IntegerRegister,
+        _: &mut FloatingPointRegister,
         _: &mut ControlAndStatusRegister,
         _: &mut SystemBus,
-    ) {
-        match instruction {
-            Instruction::TypeR {
-                opcode: _,
-                rs1: _,
-                rs2: _,
-                rd: _,
-            } => {}
-            Instruction::TypeI {
-                opcode,
-                rs1: _,
-                rd: _,
-                imm: _,
-            } => match opcode {
-                ZifenceiOpcodeI::FenceI => {} // not yet supported
-            },
-            Instruction::TypeS {
-                opcode: _,
-                rs1: _,
-                rs2: _,
-                imm: _,
-            } => {}
-            Instruction::TypeB {
-                opcode: _,
-                rs1: _,
-                rs2: _,
-                imm: _,
-            } => {}
-            Instruction::TypeU {
-                opcode: _,
-                rd: _,
-                imm: _,
-            } => {}
-            Instruction::TypeJ {
-                opcode: _,
-                rd: _,
-                imm: _,
-            } => {}
+    ) -> Result<(), Cause> {
+        if let Instruction::TypeI {
+            opcode,
+            rd: _,
+            funct3: _,
+            rs1: _,
+            imm: _,
+        } = instruction
+        {
+            match opcode {
+                ZifenceiOpcodeI::FenceI => Ok(()), // not yet supported
+            }
+        } else {
+            Ok(())
         }
     }
 }

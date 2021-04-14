@@ -145,9 +145,11 @@ mod tests {
             Rv32iDecoder::decode(inst).unwrap(),
             Instruction::TypeR {
                 opcode: Rv32iOpcodeR::Add,
+                rd: 0b10101,
+                funct3: 0,
                 rs1: 0b01010,
                 rs2: 0b00101,
-                rd: 0b10101,
+                funct7: 0b0,
             }
         );
     }
@@ -159,8 +161,9 @@ mod tests {
             Rv32iDecoder::decode(inst).unwrap(),
             Instruction::TypeI {
                 opcode: Rv32iOpcodeI::Jalr,
-                rs1: 0b01010,
                 rd: 0b00101,
+                funct3: 0,
+                rs1: 0b01010,
                 imm: 0b11111111111111111111111111111111_11111111111111111111100000000101,
             }
         );
@@ -173,6 +176,7 @@ mod tests {
             Rv32iDecoder::decode(inst).unwrap(),
             Instruction::TypeS {
                 opcode: Rv32iOpcodeS::Sb,
+                funct3: 0,
                 rs1: 0b01010,
                 rs2: 0b00101,
                 imm: 0b11111111111111111111111111111111_11111111111111111111_1010101_10101,
@@ -187,6 +191,7 @@ mod tests {
             Rv32iDecoder::decode(inst).unwrap(),
             Instruction::TypeB {
                 opcode: Rv32iOpcodeB::Beq,
+                funct3: 0,
                 rs1: 0b01010,
                 rs2: 0b00101,
                 imm: 0b11111111111111111111111111111111_11111111111111111111_1_010101_1010_0,

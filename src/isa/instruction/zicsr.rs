@@ -15,12 +15,12 @@ pub enum ZicsrOpcodeI {
 impl fmt::Display for ZicsrOpcodeI {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            ZicsrOpcodeI::Csrrw => f.write_str("Zicsr::Csrrw"),
-            ZicsrOpcodeI::Csrrs => f.write_str("Zicsr::Csrrs"),
-            ZicsrOpcodeI::Csrrc => f.write_str("Zicsr::Csrrc"),
-            ZicsrOpcodeI::Csrrwi => f.write_str("Zicsr::Csrrwi"),
-            ZicsrOpcodeI::Csrrsi => f.write_str("Zicsr::Csrrsi"),
-            ZicsrOpcodeI::Csrrci => f.write_str("Zicsr::Csrrci"),
+            Self::Csrrw => f.write_str("Zicsr::Csrrw"),
+            Self::Csrrs => f.write_str("Zicsr::Csrrs"),
+            Self::Csrrc => f.write_str("Zicsr::Csrrc"),
+            Self::Csrrwi => f.write_str("Zicsr::Csrrwi"),
+            Self::Csrrsi => f.write_str("Zicsr::Csrrsi"),
+            Self::Csrrci => f.write_str("Zicsr::Csrrci"),
         }
     }
 }

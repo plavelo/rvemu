@@ -2,15 +2,18 @@ use crate::{
     emulator::{
         bus::SystemBus,
         cpu::{
-            csr::ControlAndStatusRegister, executor::Executor, pc::ProgramCounter,
-            x::IntegerRegister,
+            csr::ControlAndStatusRegister, executor::Executor, f::FloatingPointRegister,
+            pc::ProgramCounter, x::IntegerRegister,
         },
     },
-    isa::instruction::{
-        rv64m::{
-            Rv64mOpcodeB, Rv64mOpcodeI, Rv64mOpcodeJ, Rv64mOpcodeR, Rv64mOpcodeS, Rv64mOpcodeU,
+    isa::{
+        instruction::{
+            rv64m::{
+                Rv64mOpcodeB, Rv64mOpcodeI, Rv64mOpcodeJ, Rv64mOpcodeR, Rv64mOpcodeS, Rv64mOpcodeU,
+            },
+            Instruction,
         },
-        Instruction,
+        privileged::{cause::Cause, mode::PrivilegeMode},
     },
 };
 
@@ -33,18 +36,23 @@ impl Executor for Rv64mExecutor {
             Rv64mOpcodeU,
             Rv64mOpcodeJ,
         >,
+        _: &PrivilegeMode,
         _: &mut ProgramCounter,
         x: &mut IntegerRegister,
+        _: &mut FloatingPointRegister,
         _: &mut ControlAndStatusRegister,
         _: &mut SystemBus,
-    ) {
-        match instruction {
-            Instruction::TypeR {
-                opcode,
-                rs1,
-                rs2,
-                rd,
-            } => match opcode {
+    ) -> Result<(), Cause> {
+        if let Instruction::TypeR {
+            opcode,
+            rd,
+            funct3: _,
+            rs1,
+            rs2,
+            funct7: _,
+        } = instruction
+        {
+            match opcode {
                 Rv64mOpcodeR::Mulw => x.writei(
                     rd,
                     x.readu(rs1).wrapping_mul(x.readu(rs2)) as u32 as i32 as i64,
@@ -97,35 +105,8 @@ impl Executor for Rv64mExecutor {
                         },
                     )
                 }
-            },
-            Instruction::TypeI {
-                opcode: _,
-                rs1: _,
-                rd: _,
-                imm: _,
-            } => {}
-            Instruction::TypeS {
-                opcode: _,
-                rs1: _,
-                rs2: _,
-                imm: _,
-            } => {}
-            Instruction::TypeB {
-                opcode: _,
-                rs1: _,
-                rs2: _,
-                imm: _,
-            } => {}
-            Instruction::TypeU {
-                opcode: _,
-                rd: _,
-                imm: _,
-            } => {}
-            Instruction::TypeJ {
-                opcode: _,
-                rd: _,
-                imm: _,
-            } => {}
+            }
         }
+        Ok(())
     }
 }

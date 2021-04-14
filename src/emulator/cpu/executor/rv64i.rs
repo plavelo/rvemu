@@ -4,15 +4,19 @@ use crate::{
         cpu::{
             csr::ControlAndStatusRegister,
             executor::{Executor, MASK_5BIT},
+            f::FloatingPointRegister,
             pc::ProgramCounter,
             x::IntegerRegister,
         },
     },
-    isa::instruction::{
-        rv64i::{
-            Rv64iOpcodeB, Rv64iOpcodeI, Rv64iOpcodeJ, Rv64iOpcodeR, Rv64iOpcodeS, Rv64iOpcodeU,
+    isa::{
+        instruction::{
+            rv64i::{
+                Rv64iOpcodeB, Rv64iOpcodeI, Rv64iOpcodeJ, Rv64iOpcodeR, Rv64iOpcodeS, Rv64iOpcodeU,
+            },
+            Instruction,
         },
-        Instruction,
+        privileged::{cause::Cause, mode::PrivilegeMode},
     },
 };
 
@@ -35,17 +39,21 @@ impl Executor for Rv64iExecutor {
             Rv64iOpcodeU,
             Rv64iOpcodeJ,
         >,
+        _: &PrivilegeMode,
         _: &mut ProgramCounter,
         x: &mut IntegerRegister,
+        _: &mut FloatingPointRegister,
         _: &mut ControlAndStatusRegister,
         bus: &mut SystemBus,
-    ) {
+    ) -> Result<(), Cause> {
         match instruction {
             Instruction::TypeR {
                 opcode,
+                rd,
+                funct3: _,
                 rs1,
                 rs2,
-                rd,
+                funct7: _,
             } => match opcode {
                 Rv64iOpcodeR::Sllw => x.writei(
                     rd,
@@ -68,8 +76,9 @@ impl Executor for Rv64iExecutor {
             },
             Instruction::TypeI {
                 opcode,
-                rs1,
                 rd,
+                funct3: _,
+                rs1,
                 imm,
             } => match opcode {
                 Rv64iOpcodeI::Slliw => x.writei(
@@ -94,6 +103,7 @@ impl Executor for Rv64iExecutor {
             },
             Instruction::TypeS {
                 opcode,
+                funct3: _,
                 rs1,
                 rs2,
                 imm,
@@ -102,22 +112,8 @@ impl Executor for Rv64iExecutor {
                     bus.store64(x.readi(rs1).wrapping_add(imm as i64) as u64, x.readu(rs2))
                 }
             },
-            Instruction::TypeB {
-                opcode: _,
-                rs1: _,
-                rs2: _,
-                imm: _,
-            } => {}
-            Instruction::TypeU {
-                opcode: _,
-                rd: _,
-                imm: _,
-            } => {}
-            Instruction::TypeJ {
-                opcode: _,
-                rd: _,
-                imm: _,
-            } => {}
+            _ => (),
         }
+        Ok(())
     }
 }

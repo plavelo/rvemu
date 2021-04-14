@@ -1,4 +1,4 @@
-use crate::emulator::memory::MEMORY_SIZE;
+use crate::emulator::bus::memory::MEMORY_SIZE;
 
 pub const ZERO: usize = 0;
 #[allow(dead_code)]

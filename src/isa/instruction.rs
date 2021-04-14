@@ -1,4 +1,5 @@
 pub mod privileged;
+pub mod rv32f;
 pub mod rv32i;
 pub mod rv32m;
 pub mod rv64i;
@@ -12,24 +13,29 @@ use std::fmt;
 pub enum Instruction<OpcodeR, OpcodeI, OpcodeS, OpcodeB, OpcodeU, OpcodeJ> {
     TypeR {
         opcode: OpcodeR,
+        rd: usize,
+        funct3: usize,
         rs1: usize,
         rs2: usize,
-        rd: usize,
+        funct7: usize,
     },
     TypeI {
         opcode: OpcodeI,
-        rs1: usize,
         rd: usize,
+        funct3: usize,
+        rs1: usize,
         imm: u64,
     },
     TypeS {
         opcode: OpcodeS,
+        funct3: usize,
         rs1: usize,
         rs2: usize,
         imm: u64,
     },
     TypeB {
         opcode: OpcodeB,
+        funct3: usize,
         rs1: usize,
         rs2: usize,
         imm: u64,
@@ -57,52 +63,57 @@ impl<
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Instruction::TypeR {
+            Self::TypeR {
                 opcode,
-                rs1,
-                rs2,
                 rd,
+                funct3,
+                rs1,
+                rs2,
+                funct7,
             } => write!(
                 f,
-                "Instruction::TypeR {{ opcode: {}, rs1: {}, rs2: {}, rd: {} }}",
-                opcode, rs1, rs2, rd,
+                "Instruction::TypeR {{ opcode: {}, rd: {}, funct3: {}, rs1: {}, rs2: {}, funct7: {} }}",
+                opcode, rd, funct3, rs1, rs2, funct7,
             ),
-            Instruction::TypeI {
+            Self::TypeI {
                 opcode,
-                rs1,
                 rd,
+                funct3,
+                rs1,
                 imm,
             } => write!(
                 f,
-                "Instruction::TypeI {{ opcode: {}, rs1: {}, rd: {}, imm: {} }}",
-                opcode, rs1, rd, imm,
+                "Instruction::TypeI {{ opcode: {}, rd: {}, funct3: {}, rs1: {}, imm: {} }}",
+                opcode, rd, funct3, rs1, imm,
             ),
-            Instruction::TypeS {
+            Self::TypeS {
                 opcode,
+                funct3,
                 rs1,
                 rs2,
                 imm,
             } => write!(
                 f,
-                "Instruction::TypeS {{ opcode: {}, rs1: {}, rs2: {}, imm: {} }}",
-                opcode, rs1, rs2, imm,
+                "Instruction::TypeS {{ opcode: {}, funct3: {}, rs1: {}, rs2: {}, imm: {} }}",
+                opcode, funct3, rs1, rs2, imm,
             ),
-            Instruction::TypeB {
+            Self::TypeB {
                 opcode,
+                funct3,
                 rs1,
                 rs2,
                 imm,
             } => write!(
                 f,
-                "Instruction::TypeB {{ opcode: {}, rs1: {}, rs2: {}, imm: {} }}",
-                opcode, rs1, rs2, imm,
+                "Instruction::TypeB {{ opcode: {}, funct3: {}, rs1: {}, rs2: {}, imm: {} }}",
+                opcode, funct3, rs1, rs2, imm,
             ),
-            Instruction::TypeU { opcode, rd, imm } => write!(
+            Self::TypeU { opcode, rd, imm } => write!(
                 f,
                 "Instruction::TypeU {{ opcode: {}, rd: {}, imm: {} }}",
                 opcode, rd, imm,
             ),
-            Instruction::TypeJ { opcode, rd, imm } => write!(
+            Self::TypeJ { opcode, rd, imm } => write!(
                 f,
                 "Instruction::TypeJ {{ opcode: {}, rd: {}, imm: {} }}",
                 opcode, rd, imm,

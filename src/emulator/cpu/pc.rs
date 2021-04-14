@@ -1,4 +1,4 @@
-use crate::emulator::memory::MEMORY_BASE_ADDRESS;
+use crate::emulator::bus::memory::MEMORY_BASE_ADDRESS;
 
 pub struct ProgramCounter {
     pc: u64,

@@ -1,8 +1,10 @@
 mod bus;
 mod cpu;
-mod memory;
 
-use crate::emulator::{bus::Size, cpu::Cpu, memory::MEMORY_BASE_ADDRESS};
+use crate::emulator::{
+    bus::{memory::MEMORY_BASE_ADDRESS, Size},
+    cpu::Cpu,
+};
 use std::fs::File;
 use std::io::{BufReader, Read, Result};
 
